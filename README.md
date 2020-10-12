@@ -48,6 +48,6 @@ $ make
 
 ## :smile: About
 
-![purplecat](https://github.com/tamadalab/purplecat/raw/main/site/images/purplecat_128.png)
+![purplecat](https://github.com/tamadalab/purplecat/raw/main/site/static/images/purplecat_128.png)
 
-This image is from [https://pixy.org/4693873/].
+This image comes from https://pixy.org/4693873/ ([CC-0](https://creativecommons.org/publicdomain/zero/1.0)).
