@@ -2,29 +2,23 @@ package main
 
 import (
 	"fmt"
-	"io"
 	"os"
+	"path/filepath"
 
 	flag "github.com/spf13/pflag"
+	"github.com/tamadalab/purplecat"
 )
-
-const VERSION = "1.0.0"
 
 type options struct {
 	dest     string
 	offline  bool
+	format   string
+	depth    int
 	helpFlag bool
-	destFile *os.File
 	args     []string
 }
 
-func (opts *options) finish() {
-	if opts.destFile != nil {
-		opts.destFile.Close()
-	}
-}
-
-func (opts *options) destination() (io.Writer, error) {
+func (opts *options) destination() (*os.File, error) {
 	if opts.dest == "" {
 		return os.Stdout, nil
 	}
@@ -32,7 +26,6 @@ func (opts *options) destination() (io.Writer, error) {
 	if err != nil {
 		return nil, err
 	}
-	opts.destFile = dest
 	return dest, nil
 }
 
@@ -41,15 +34,19 @@ func (opts *options) isHelpFlag() bool {
 }
 
 func helpMessage(progName string) string {
+	name := filepath.Base(progName)
 	return fmt.Sprintf(`%s version %s
 %s [OPTIONS] <PROJECTs...>
 OPTIONS
-	-d, --dest <FILE>    specifies the destination file (default: STDOUT).
-	-N, --offline        offline mode (no network access).
+    -d, --depth <DEPTH>      specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>    specifies the format of the result. Default is 'markdown'.
+                             Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -o, --output <FILE>      specifies the destination file (default: STDOUT).
+    -N, --offline            offline mode (no network access).
 
-	-h, --help           prints this message.
+    -h, --help               prints this message.
 PROJECT
-    target project for extracting related libraries and their licenses.`, progName, VERSION, progName)
+    target project for extracting related libraries and their licenses.`, name, purplecat.VERSION, name)
 }
 
 func printError(err error, status int) int {
@@ -60,40 +57,55 @@ func printError(err error, status int) int {
 	return 0
 }
 
-func constructFlags(opts *options) *flag.FlagSet {
+func constructFlags(args []string, opts *options) *flag.FlagSet {
 	flags := flag.NewFlagSet("purplecat", flag.ContinueOnError)
 	flags.Usage = func() { fmt.Println(helpMessage(args[0])) }
 	flags.BoolVarP(&opts.offline, "offline", "N", false, "offline mode (no network access)")
 	flags.BoolVarP(&opts.helpFlag, "help", "h", false, "print this message")
-	flags.StringVarP(&opts.dest, "dest", "d", "", "specifies the destination file (default: STDOUT)")
+	flags.IntVarP(&opts.depth, "depth", "d", 1, "specifies the depth for parsing")
+	flags.StringVarP(&opts.dest, "output", "o", "", "specifies the destination file (default: STDOUT)")
+	flags.StringVarP(&opts.format, "format", "f", "markdown", "specifies the result format (default: markdown).")
 	return flags
 }
 
 func parseArgs(args []string) (*options, int, error) {
 	opts := &options{}
-	flags := constructFlags(opts)
+	flags := constructFlags(args, opts)
 	if err := flags.Parse(args); err != nil {
 		return opts, 1, err
 	}
+	opts.args = flags.Args()[1:]
 	if opts.isHelpFlag() {
 		return opts, 0, fmt.Errorf(helpMessage(args[0]))
 	}
-	opts.args = flags.Args()[1:]
 	return opts, 0, nil
 }
 
+func performEach(projectPath string, context *purplecat.Context) (*purplecat.DependencyTree, error) {
+	parser, err := context.GenerateParser(projectPath)
+	if err != nil {
+		return nil, err
+	}
+	return parser.Parse(projectPath)
+}
+
 func perform(opts *options) int {
+	context := purplecat.NewContext(!opts.offline, opts.format, opts.depth)
 	dest, err := opts.destination()
 	if err != nil {
-		return 9
+		return printError(err, 9)
 	}
-	defer opts.finish()
+	writer, err2 := context.NewWriter(dest)
+	if err2 != nil {
+		return printError(err2, 8)
+	}
+
 	for _, project := range opts.args {
-		tree, err := purplecat.ParseProject(project)
+		tree, err := performEach(project, context)
 		if err != nil {
 			return printError(err, 2)
 		}
-		tree.Println(dest)
+		writer.Write(tree)
 	}
 	return 0
 }
