@@ -1,4 +1,4 @@
-
+![build](https://github.com/tamadalab/purplecat/workflows/build/badge.svg)
 [![Coverage Status](https://coveralls.io/repos/github/tamadalab/purplecat/badge.svg?branch=main)](https://coveralls.io/github/tamadalab/purplecat?branch=main)
 [![codebeat badge](https://codebeat.co/badges/760a8a6f-2675-4a71-9a77-07c33a807192)](https://codebeat.co/projects/github-com-tamadalab-purplecat-main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamadalab/purplecat)](https://goreportcard.com/report/github.com/tamadalab/purplecat)
