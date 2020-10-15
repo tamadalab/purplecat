@@ -85,8 +85,16 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 	return constructDependencyTree(root, pomPath.Dir(), context, currentDepth)
 }
 
+func hitCache(artifact *artifact) (*DependencyTree, bool) {
+	dep, ok := cache[artifact.String()]
+	return dep, ok
+}
+
 func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
 	projectArtifact := parseProjectInfo(root)
+	if dep, ok := hitCache(projectArtifact); ok {
+		return dep, nil
+	}
 	licenseNames, ok := findLicenseNamesFromPom(root)
 	if !ok && projectArtifact.parent != nil {
 		parentPomPath := constructLocalPomPath(projectArtifact.parent)
@@ -97,6 +105,7 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 		licenseNames = dep.LicenseNames
 	}
 	project := &DependencyTree{ProjectName: projectArtifact.String(), LicenseNames: licenseNames}
+	cache[projectArtifact.String()] = project
 	return parseDependency(project, root, context, currentDepth)
 }
 

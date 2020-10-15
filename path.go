@@ -69,7 +69,6 @@ func (ups *UrlPathSupporter) Dir(urlPath string) string {
 }
 
 func (ups *UrlPathSupporter) ExistFile(path string, context *Context) bool {
-	fmt.Printf("UrlPathSupproter.ExistFile(%s)\n", path)
 	if !context.Allow(NETWORK_ACCESS) {
 		return false
 	}
@@ -106,7 +105,6 @@ func (lfps *LocalFilePathSupporter) Dir(filePath string) string {
 }
 
 func (lfps *LocalFilePathSupporter) ExistFile(path string, context *Context) bool {
-	fmt.Printf("LocalFilePathSupproter.ExistFile(%s)\n", path)
 	stat, err := os.Stat(path)
 	if err == nil && stat.Mode().IsRegular() {
 		return true
