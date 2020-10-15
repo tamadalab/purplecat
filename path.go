@@ -76,8 +76,8 @@ func (ups *UrlPathSupporter) ExistFile(path string, context *Context) bool {
 	client := resty.New()
 	request := client.NewRequest()
 	response, err := request.Get(path)
-	result := err != nil && response.StatusCode() != 404
-	logger.Debugf("Exist(%s): %v", path, result)
+	result := (err != nil || response.StatusCode() != 404)
+	logger.Debugf("Exist(%s): %v (%d)", path)
 	return result
 }
 

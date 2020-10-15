@@ -49,14 +49,32 @@ func (artifact *artifact) pomPath() string {
 	return fmt.Sprintf("%s/%s-%s.pom", artifact.repoPath(), artifact.artifactID, artifact.version)
 }
 
+func (artifact *artifact) isValid() bool {
+	return artifact.groupID != "" && artifact.artifactID != "" && artifact.version != ""
+}
+
 var cache = map[string]*DependencyTree{}
 
 type MavenParser struct {
 	context *Context
 }
 
+func isPom(fileName string) bool {
+	logger.Debugf("isPom(%s), %v", fileName, strings.HasSuffix(fileName, ".pom"))
+	return fileName == "pom.xml" || strings.HasSuffix(fileName, ".pom")
+}
+
+func (mp *MavenParser) IsTarget(path *Path, context *Context) bool {
+	base := path.Base()
+	if base == "pom.xml" || strings.HasSuffix(base, ".pom") {
+		return path.Exists(context)
+	}
+	join := path.Join("pom.xml")
+	return join.Exists(context)
+}
+
 func (mp *MavenParser) Parse(pomPath *Path) (*DependencyTree, error) {
-	if pomPath.Base() != "pom.xml" {
+	if !isPom(pomPath.Base()) {
 		pomPath = pomPath.Join("pom.xml")
 	}
 	if !pomPath.Exists(mp.context) {
@@ -96,6 +114,15 @@ func hitCache(artifact *artifact) (*DependencyTree, bool) {
 	return dep, ok
 }
 
+func findParentLicense(parent *artifact, context *Context, currentDepth int) []*License {
+	parentPomPath := constructLocalPomPath(parent)
+	dep, err := parsePom(parentPomPath, context, currentDepth)
+	if err != nil {
+		return []*License{}
+	}
+	return dep.Licenses
+}
+
 func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
 	projectArtifact := parseProjectInfo(root)
 	if dep, ok := hitCache(projectArtifact); ok {
@@ -103,12 +130,7 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 	}
 	licenses, ok := findLicensesFromPom(root)
 	if !ok && projectArtifact.parent != nil {
-		parentPomPath := constructLocalPomPath(projectArtifact.parent)
-		dep, err := parsePom(parentPomPath, context, currentDepth)
-		if err != nil {
-			return nil, err
-		}
-		licenses = dep.Licenses
+		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
 	}
 	project := &DependencyTree{ProjectInfo: projectArtifact, Licenses: licenses}
 	cache[projectArtifact.Name()] = project
@@ -225,7 +247,7 @@ func merge(base, append *artifact) *artifact {
 		base.version = append.version
 	}
 	if !base.valid {
-		base.valid = base.groupID != "" && base.artifactID != "" && base.version != ""
+		base.valid = base.isValid()
 	}
 	return base
 }

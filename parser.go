@@ -6,6 +6,7 @@ import (
 
 type Parser interface {
 	Parse(path *Path) (*DependencyTree, error)
+	IsTarget(path *Path, context *Context) bool
 }
 
 type GradleParser struct {
@@ -13,22 +14,15 @@ type GradleParser struct {
 }
 
 func (context *Context) GenerateParser(givenPath string) (Parser, error) {
-	generators := []struct {
-		fileName string
-		parser   Parser
-	}{
-		{"pom.xml", &MavenParser{context: context}},
+	parsers := []Parser{
+		&MavenParser{context: context},
 		// {"build.gradle", &GradleParser{context: context}},
 		// {"go.mod", &GoModParser{context: context}},
 	}
 	path := NewPath(givenPath)
-	for _, generator := range generators {
-		if path.Base() == generator.fileName && path.Exists(context) {
-			return generator.parser, nil
-		}
-		buildFilePath := path.Join(generator.fileName)
-		if buildFilePath.Exists(context) {
-			return generator.parser, nil
+	for _, parser := range parsers {
+		if parser.IsTarget(path, context) {
+			return parser, nil
 		}
 	}
 	return nil, fmt.Errorf("%s: cannot parse the project", path)
