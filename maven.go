@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	homedir "github.com/mitchellh/go-homedir"
+	"github.com/tamadalab/purplecat/logger"
 	"golang.org/x/net/html/charset"
 	"gopkg.in/xmlpath.v2"
 )
@@ -24,10 +25,14 @@ type artifact struct {
 	parent     *artifact
 }
 
+func getStringByXPath(xpath string, node *xmlpath.Node) (string, bool) {
+	return xmlpath.MustCompile(xpath).String(node)
+}
+
 func newArtifact(node *xmlpath.Node) *artifact {
-	groupID, ok1 := xmlpath.MustCompile("groupId").String(node)
-	artifactID, ok2 := xmlpath.MustCompile("artifactId").String(node)
-	version, ok3 := xmlpath.MustCompile("version").String(node)
+	groupID, ok1 := getStringByXPath("groupId", node)
+	artifactID, ok2 := getStringByXPath("artifactId", node)
+	version, ok3 := getStringByXPath("version", node)
 	return &artifact{groupID: groupID, artifactID: artifactID, version: version, valid: ok1 && ok2 && ok3}
 }
 
@@ -64,6 +69,7 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
+	logger.Debugf("parsePom(%s, %d)", pomPath.Path, currentDepth)
 	pom, err := pomPath.Open(context)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -95,16 +101,16 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 	if dep, ok := hitCache(projectArtifact); ok {
 		return dep, nil
 	}
-	licenseNames, ok := findLicenseNamesFromPom(root)
+	licenses, ok := findLicensesFromPom(root)
 	if !ok && projectArtifact.parent != nil {
 		parentPomPath := constructLocalPomPath(projectArtifact.parent)
 		dep, err := parsePom(parentPomPath, context, currentDepth)
 		if err != nil {
 			return nil, err
 		}
-		licenseNames = dep.LicenseNames
+		licenses = dep.Licenses
 	}
-	project := &DependencyTree{ProjectName: projectArtifact.String(), LicenseNames: licenseNames}
+	project := &DependencyTree{ProjectName: projectArtifact.String(), Licenses: licenses}
 	cache[projectArtifact.String()] = project
 	return parseDependency(project, root, context, currentDepth)
 }
@@ -152,12 +158,18 @@ func parseDependency(project *DependencyTree, root *xmlpath.Node, context *Conte
 	return project, nil
 }
 
-func findLicenseNamesFromPom(root *xmlpath.Node) ([]string, bool) {
-	licenseNamePath := xmlpath.MustCompile("/project/licenses/license/name")
-	licenses := []string{}
+func buildLicense(licenseNode *xmlpath.Node) *License {
+	licenseName, _ := getStringByXPath("name", licenseNode)
+	url, _ := getStringByXPath("url", licenseNode)
+	return &License{Name: licenseName, Url: url}
+}
+
+func findLicensesFromPom(root *xmlpath.Node) ([]*License, bool) {
+	licenseNamePath := xmlpath.MustCompile("/project/licenses/license")
+	licenses := []*License{}
 	if licenseNamePath.Exists(root) {
 		for iter := licenseNamePath.Iter(root); iter.Next(); {
-			licenses = append(licenses, iter.Node().String())
+			licenses = append(licenses, buildLicense(iter.Node()))
 		}
 		return licenses, true
 	}

@@ -12,7 +12,7 @@ const NETWORK_ACCESS ActType = iota + 1
 
 type DependencyTree struct {
 	ProjectName  string
-	LicenseNames []string
+	Licenses     []*License
 	Dependencies []*DependencyTree
 }
 
@@ -22,12 +22,12 @@ type Context struct {
 	Depth              int
 }
 
-var UNKNOWN_LICENSE = &License{LicenseName: "unknown", SpdxId: "unknown", Url: ""}
+var UNKNOWN_LICENSE = &License{Name: "unknown", SpdxId: "unknown", Url: ""}
 
 type License struct {
-	LicenseName string `json:"name"`
-	SpdxId      string `json:"spdx_id"`
-	Url         string `json:"url"`
+	Name   string `json:"name"`
+	SpdxId string `json:"spdx_id"`
+	Url    string `json:"url"`
 }
 
 func NewContext(allowNetworkAccess bool, format string, depth int) *Context {

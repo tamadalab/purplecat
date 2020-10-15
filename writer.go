@@ -35,10 +35,8 @@ func (mw *MarkdownWriter) Write(tree *DependencyTree) error {
 
 func (mw *MarkdownWriter) writeImpl(tree *DependencyTree, indent string) error {
 	licenses := []string{}
-	if tree.LicenseNames != nil {
-		for _, name := range tree.LicenseNames {
-			licenses = append(licenses, fmt.Sprintf(`"%s"`, name))
-		}
+	for _, name := range tree.Licenses {
+		licenses = append(licenses, fmt.Sprintf(`"%s"`, name.Name))
 	}
 	line := fmt.Sprintf("%s* %s: [%s]\n", indent, tree.ProjectName, strings.Join(licenses, ","))
 	mw.Out.Write([]byte(line))
@@ -58,8 +56,8 @@ func (cw *CsvWriter) Write(tree *DependencyTree) error {
 
 func (cw *CsvWriter) writeImpl(tree *DependencyTree, parent string) {
 	array := []string{}
-	for _, name := range tree.LicenseNames {
-		array = append(array, fmt.Sprintf(`"%s"`, name))
+	for _, name := range tree.Licenses {
+		array = append(array, fmt.Sprintf(`"%s"`, name.Name))
 	}
 	line := fmt.Sprintf("%s,%s,%s\n", tree.ProjectName, array, parent)
 	cw.Out.Write([]byte(line))
@@ -86,7 +84,15 @@ func (jw *JsonWriter) JsonString(tree *DependencyTree) string {
 	if len(array) > 0 {
 		dependentString = fmt.Sprintf(`,"dependencies":[%s]`, strings.Join(array, ","))
 	}
-	return fmt.Sprintf(`{"project-name":"%s","license-names":["%s"]%s}`, tree.ProjectName, strings.Join(tree.LicenseNames, ","), dependentString)
+	return fmt.Sprintf(`{"project-name":"%s","license-names":["%s"]%s}`, tree.ProjectName, joinLicenseNames(tree), dependentString)
+}
+
+func joinLicenseNames(tree *DependencyTree) string {
+	licenseNames := []string{}
+	for _, license := range tree.Licenses {
+		licenseNames = append(licenseNames, license.Name)
+	}
+	return strings.Join(licenseNames, ",")
 }
 
 func (yw *YamlWriter) Write(tree *DependencyTree) error {
@@ -98,7 +104,7 @@ func (yw *YamlWriter) Write(tree *DependencyTree) error {
 
 func (yw *YamlWriter) string(tree *DependencyTree, indent, header1, header2 string) string {
 	base := fmt.Sprintf(`%s%sproject-name:%s
-%s%slicense-names:[%s]`, indent, header1, tree.ProjectName, indent, header2, strings.Join(tree.LicenseNames, ","))
+%s%slicense-names:[%s]`, indent, header1, tree.ProjectName, indent, header2, joinLicenseNames(tree))
 	array := []string{}
 	for _, dep := range tree.Dependencies {
 		if dep != nil {
@@ -128,8 +134,8 @@ func (xw *XmlWriter) Write(tree *DependencyTree) error {
 
 func (xw *XmlWriter) string(tree *DependencyTree, indent string) string {
 	xmlLicenses := []string{}
-	for _, license := range tree.LicenseNames {
-		xmlLicenses = append(xmlLicenses, indent+"  <license-name>"+license+"</license-name>")
+	for _, license := range tree.Licenses {
+		xmlLicenses = append(xmlLicenses, indent+"  <license-name>"+license.Name+"</license-name>")
 	}
 	project := fmt.Sprintf(`%s<project-name>%s</project-name>
 %s<license-names>

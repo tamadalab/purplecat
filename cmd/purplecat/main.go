@@ -7,6 +7,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/tamadalab/purplecat"
+	"github.com/tamadalab/purplecat/logger"
 )
 
 type options struct {
@@ -121,4 +122,8 @@ func goMain(args []string) int {
 func main() {
 	status := goMain(os.Args)
 	os.Exit(status)
+}
+
+func init() {
+	logger.SetLevel(logger.DEBUG)
 }
