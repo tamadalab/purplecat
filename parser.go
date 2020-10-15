@@ -12,10 +12,6 @@ type GradleParser struct {
 	context *Context
 }
 
-type GoModParser struct {
-	context *Context
-}
-
 func (context *Context) GenerateParser(givenPath string) (Parser, error) {
 	generators := []struct {
 		fileName string
