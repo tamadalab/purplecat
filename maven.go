@@ -3,7 +3,6 @@ package purplecat
 import (
 	"encoding/xml"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -49,22 +48,23 @@ var cache = map[string]*DependencyTree{}
 
 type MavenParser struct {
 	context *Context
-	cache   map[string]*DependencyTree
 }
 
-func (mp *MavenParser) Parse(path string) (*DependencyTree, error) {
-	pomPath := filepath.Join(path, "pom.xml")
-	if !FindFile(filepath.Join(pomPath)) {
-		return nil, fmt.Errorf("%s: not maven project (pom.xml not found)", path)
+func (mp *MavenParser) Parse(pomPath *Path) (*DependencyTree, error) {
+	if pomPath.Base() != "pom.xml" {
+		pomPath = pomPath.Join("pom.xml")
+	}
+	if !pomPath.Exists(mp.context) {
+		return nil, fmt.Errorf("%s: not maven project (pom.xml not found)", pomPath.Path)
 	}
 	return parsePom(pomPath, mp.context, 0)
 }
 
-func parsePom(pomPath string, context *Context, currentDepth int) (*DependencyTree, error) {
+func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTree, error) {
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
-	pom, err := os.Open(pomPath)
+	pom, err := pomPath.Open(context)
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil, err
@@ -82,19 +82,14 @@ func parsePom(pomPath string, context *Context, currentDepth int) (*DependencyTr
 		fmt.Println(err.Error())
 		return nil, err
 	}
-	return constructDependencyTree(root, filepath.Dir(pomPath), context, currentDepth)
+	return constructDependencyTree(root, pomPath.Dir(), context, currentDepth)
 }
 
-func constructLocalParentPomPath(artifact *artifact) string {
-	home, _ := homedir.Dir()
-	return filepath.Join(home, LOCAL_MAVEN_REPOSITORY, artifact.parent.pomPath())
-}
-
-func constructDependencyTree(root *xmlpath.Node, path string, context *Context, currentDepth int) (*DependencyTree, error) {
+func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
 	projectArtifact := parseProjectInfo(root)
 	licenseNames, ok := findLicenseNamesFromPom(root)
 	if !ok && projectArtifact.parent != nil {
-		parentPomPath := constructLocalParentPomPath(projectArtifact)
+		parentPomPath := constructLocalPomPath(projectArtifact.parent)
 		dep, err := parsePom(parentPomPath, context, currentDepth)
 		if err != nil {
 			return nil, err
@@ -105,37 +100,38 @@ func constructDependencyTree(root *xmlpath.Node, path string, context *Context, 
 	return parseDependency(project, root, context, currentDepth)
 }
 
-func findLicensesFromRemoteRepositoryPom(artifact *artifact, context *Context, currentDepth int) (*DependencyTree, error) {
-	return nil, fmt.Errorf("not implemented yet.")
+func constructCentralRepoPomPath(artifact *artifact) *Path {
+	url := fmt.Sprintf("%s/%s", MAVEN_CENTRAL_REPOSITORY, artifact.repoPath())
+	return NewPath(url)
 }
 
-func findDependencyTreeFromLocalRepositoryPom(artifact *artifact, context *Context, currentDepth int) (*DependencyTree, error) {
-	home, err := homedir.Dir()
-	if err != nil {
-		return nil, err
-	}
-	pomPath := filepath.Join(home, LOCAL_MAVEN_REPOSITORY, artifact.pomPath())
-	if !FindFile(pomPath) {
-		return nil, fmt.Errorf("%s: file not found", pomPath)
-	}
-	dep, err := parsePom(pomPath, context, currentDepth+1)
-	if err != nil {
-		return nil, err
-	}
-	return dep, nil
+func constructLocalPomPath(artifact *artifact) *Path {
+	home, _ := homedir.Dir()
+	return NewPath(filepath.Join(home, LOCAL_MAVEN_REPOSITORY, artifact.pomPath()))
 }
 
-func findDependencyTreeFromRepository(artifact *artifact, context *Context, currentDepth int) *DependencyTree {
-	dep, err := findDependencyTreeFromLocalRepositoryPom(artifact, context, currentDepth)
-	if err != nil && context.Allow(NETWORK_ACCESS) {
-		dep, err = findLicensesFromRemoteRepositoryPom(artifact, context, currentDepth)
+func constructPom(art *artifact, context *Context) (*Path, error) {
+	pomPathGenerators := []func(*artifact) *Path{
+		constructLocalPomPath,
+		constructCentralRepoPomPath,
 	}
-	return dep
+	for _, generator := range pomPathGenerators {
+		pomPath := generator(art)
+		if pomPath.Exists(context) {
+			return pomPath, nil
+		}
+	}
+	return nil, fmt.Errorf("%s: pom not found", art.String())
 }
 
 func nodeToDependencyTree(node *xmlpath.Node, context *Context, currentDepth int) *DependencyTree {
 	artifact := newArtifact(node)
-	return findDependencyTreeFromRepository(artifact, context, currentDepth)
+	pomPath, err := constructPom(artifact, context)
+	if err != nil {
+		return nil
+	}
+	dep, _ := parsePom(pomPath, context, currentDepth+1)
+	return dep
 }
 
 func parseDependency(project *DependencyTree, root *xmlpath.Node, context *Context, currentDepth int) (*DependencyTree, error) {

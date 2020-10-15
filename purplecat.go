@@ -22,6 +22,14 @@ type Context struct {
 	Depth              int
 }
 
+var UNKNOWN_LICENSE = &License{LicenseName: "unknown", SpdxId: "unknown", Url: ""}
+
+type License struct {
+	LicenseName string `json:"name"`
+	SpdxId      string `json:"spdx_id"`
+	Url         string `json:"url"`
+}
+
 func NewContext(allowNetworkAccess bool, format string, depth int) *Context {
 	return &Context{AllowNetworkAccess: allowNetworkAccess, Format: format, Depth: depth}
 }

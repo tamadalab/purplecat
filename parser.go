@@ -2,11 +2,10 @@ package purplecat
 
 import (
 	"fmt"
-	"path/filepath"
 )
 
 type Parser interface {
-	Parse(path string) (*DependencyTree, error)
+	Parse(path *Path) (*DependencyTree, error)
 }
 
 type GradleParser struct {
@@ -17,7 +16,7 @@ type GoModParser struct {
 	context *Context
 }
 
-func (context *Context) GenerateParser(path string) (Parser, error) {
+func (context *Context) GenerateParser(givenPath string) (Parser, error) {
 	generators := []struct {
 		fileName string
 		parser   Parser
@@ -26,12 +25,15 @@ func (context *Context) GenerateParser(path string) (Parser, error) {
 		// {"build.gradle", &GradleParser{context: context}},
 		// {"go.mod", &GoModParser{context: context}},
 	}
+	path := NewPath(givenPath)
 	for _, generator := range generators {
-		buildFile := filepath.Join(path, generator.fileName)
-		if FindFile(buildFile) {
+		if path.Base() == generator.fileName && path.Exists(context) {
+			return generator.parser, nil
+		}
+		buildFilePath := path.Join(generator.fileName)
+		if buildFilePath.Exists(context) {
 			return generator.parser, nil
 		}
 	}
 	return nil, fmt.Errorf("%s: cannot parse the project", path)
 }
-

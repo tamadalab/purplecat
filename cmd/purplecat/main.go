@@ -86,7 +86,7 @@ func performEach(projectPath string, context *purplecat.Context) (*purplecat.Dep
 	if err != nil {
 		return nil, err
 	}
-	return parser.Parse(projectPath)
+	return parser.Parse(purplecat.NewPath(projectPath))
 }
 
 func perform(opts *options) int {
