@@ -37,7 +37,7 @@ func (opts *options) isHelpFlag() bool {
 func helpMessage(progName string) string {
 	name := filepath.Base(progName)
 	return fmt.Sprintf(`%s version %s
-%s [OPTIONS] <PROJECTs...>
+%s [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
     -d, --depth <DEPTH>      specifies the depth for parsing (default: 1)
     -f, --format <FORMAT>    specifies the format of the result. Default is 'markdown'.
@@ -47,7 +47,10 @@ OPTIONS
 
     -h, --help               prints this message.
 PROJECT
-    target project for extracting related libraries and their licenses.`, name, purplecat.VERSION, name)
+	target project for extracting dependent libraries and their licenses.
+BUILD_FILE
+    build file of the project for extracting dependent libraries and their licenses`, name, purplecat.VERSION, name)
+
 }
 
 func printError(err error, status int) int {

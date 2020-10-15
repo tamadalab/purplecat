@@ -36,7 +36,7 @@ func newArtifact(node *xmlpath.Node) *artifact {
 	return &artifact{groupID: groupID, artifactID: artifactID, version: version, valid: ok1 && ok2 && ok3}
 }
 
-func (artifact *artifact) String() string {
+func (artifact *artifact) Name() string {
 	return fmt.Sprintf("%s/%s/%s", artifact.groupID, artifact.artifactID, artifact.version)
 }
 
@@ -92,7 +92,7 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 }
 
 func hitCache(artifact *artifact) (*DependencyTree, bool) {
-	dep, ok := cache[artifact.String()]
+	dep, ok := cache[artifact.Name()]
 	return dep, ok
 }
 
@@ -110,9 +110,9 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 		}
 		licenses = dep.Licenses
 	}
-	project := &DependencyTree{ProjectName: projectArtifact.String(), Licenses: licenses}
-	cache[projectArtifact.String()] = project
-	return parseDependency(project, root, context, currentDepth)
+	project := &DependencyTree{ProjectInfo: projectArtifact, Licenses: licenses}
+	cache[projectArtifact.Name()] = project
+	return parseDependency(projectArtifact, project, root, context, currentDepth)
 }
 
 func constructCentralRepoPomPath(artifact *artifact) *Path {
@@ -136,11 +136,22 @@ func constructPom(art *artifact, context *Context) (*Path, error) {
 			return pomPath, nil
 		}
 	}
-	return nil, fmt.Errorf("%s: pom not found", art.String())
+	return nil, fmt.Errorf("%s: pom not found", art.Name())
 }
 
-func nodeToDependencyTree(node *xmlpath.Node, context *Context, currentDepth int) *DependencyTree {
+func normalizeProject(target, base *artifact) *artifact {
+	if target.version == "${project.version}" {
+		target.version = base.version
+	}
+	if target.groupID == "${project.groupId}" {
+		target.groupID = base.groupID
+	}
+	return target
+}
+
+func nodeToDependencyTree(base *artifact, node *xmlpath.Node, context *Context, currentDepth int) *DependencyTree {
 	artifact := newArtifact(node)
+	artifact = normalizeProject(artifact, base)
 	pomPath, err := constructPom(artifact, context)
 	if err != nil {
 		return nil
@@ -149,10 +160,10 @@ func nodeToDependencyTree(node *xmlpath.Node, context *Context, currentDepth int
 	return dep
 }
 
-func parseDependency(project *DependencyTree, root *xmlpath.Node, context *Context, currentDepth int) (*DependencyTree, error) {
+func parseDependency(art *artifact, project *DependencyTree, root *xmlpath.Node, context *Context, currentDepth int) (*DependencyTree, error) {
 	dependencyPath := xmlpath.MustCompile("/project/dependencies/dependency")
 	for iter := dependencyPath.Iter(root); iter.Next(); {
-		dependency := nodeToDependencyTree(iter.Node(), context, currentDepth)
+		dependency := nodeToDependencyTree(art, iter.Node(), context, currentDepth)
 		project.Dependencies = append(project.Dependencies, dependency)
 	}
 	return project, nil

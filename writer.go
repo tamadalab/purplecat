@@ -38,7 +38,7 @@ func (mw *MarkdownWriter) writeImpl(tree *DependencyTree, indent string) error {
 	for _, name := range tree.Licenses {
 		licenses = append(licenses, fmt.Sprintf(`"%s"`, name.Name))
 	}
-	line := fmt.Sprintf("%s* %s: [%s]\n", indent, tree.ProjectName, strings.Join(licenses, ","))
+	line := fmt.Sprintf("%s* %s: [%s]\n", indent, tree.ProjectInfo.Name(), strings.Join(licenses, ","))
 	mw.Out.Write([]byte(line))
 	for _, dependency := range tree.Dependencies {
 		if dependency != nil {
@@ -59,11 +59,11 @@ func (cw *CsvWriter) writeImpl(tree *DependencyTree, parent string) {
 	for _, name := range tree.Licenses {
 		array = append(array, fmt.Sprintf(`"%s"`, name.Name))
 	}
-	line := fmt.Sprintf("%s,%s,%s\n", tree.ProjectName, array, parent)
+	line := fmt.Sprintf("%s,%s,%s\n", tree.ProjectInfo.Name(), array, parent)
 	cw.Out.Write([]byte(line))
 	for _, dep := range tree.Dependencies {
 		if dep != nil {
-			cw.writeImpl(dep, tree.ProjectName)
+			cw.writeImpl(dep, tree.ProjectInfo.Name())
 		}
 	}
 }
@@ -84,7 +84,7 @@ func (jw *JsonWriter) JsonString(tree *DependencyTree) string {
 	if len(array) > 0 {
 		dependentString = fmt.Sprintf(`,"dependencies":[%s]`, strings.Join(array, ","))
 	}
-	return fmt.Sprintf(`{"project-name":"%s","license-names":["%s"]%s}`, tree.ProjectName, joinLicenseNames(tree), dependentString)
+	return fmt.Sprintf(`{"project-name":"%s","license-names":["%s"]%s}`, tree.ProjectInfo.Name(), joinLicenseNames(tree), dependentString)
 }
 
 func joinLicenseNames(tree *DependencyTree) string {
@@ -104,7 +104,7 @@ func (yw *YamlWriter) Write(tree *DependencyTree) error {
 
 func (yw *YamlWriter) string(tree *DependencyTree, indent, header1, header2 string) string {
 	base := fmt.Sprintf(`%s%sproject-name:%s
-%s%slicense-names:[%s]`, indent, header1, tree.ProjectName, indent, header2, joinLicenseNames(tree))
+%s%slicense-names:[%s]`, indent, header1, tree.ProjectInfo.Name(), indent, header2, joinLicenseNames(tree))
 	array := []string{}
 	for _, dep := range tree.Dependencies {
 		if dep != nil {
@@ -140,7 +140,7 @@ func (xw *XmlWriter) string(tree *DependencyTree, indent string) string {
 	project := fmt.Sprintf(`%s<project-name>%s</project-name>
 %s<license-names>
 %s
-%s</license-names>`, indent, tree.ProjectName, indent, strings.Join(xmlLicenses, "\n"), indent)
+%s</license-names>`, indent, tree.ProjectInfo.Name(), indent, strings.Join(xmlLicenses, "\n"), indent)
 	array := []string{}
 	for _, dep := range tree.Dependencies {
 		if dep != nil {

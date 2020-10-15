@@ -60,6 +60,12 @@ dependent-project2,["BSD"],project1
 }
 ```
 
+you can get formatted Json using `jq`, like the following the command.
+
+```sh
+$ purplecat .... | jq .
+```
+
 #### Yaml
 
 ```yaml
@@ -119,7 +125,7 @@ license-name: BSD
     * dependent-project2: ["BSD"]
 ```
 
-## :whale: Docker
+## :whale: Docker (not implement yet)
 
 ```sh
 $ docker run -v /target/project/dir:/home/projects tamadalab/purplecat
@@ -142,6 +148,10 @@ $ make
 
 ### Requirements
 
+* [gopkg.in/xmlpath.v2](https://github.com/go-xmlpath/xmlpath/tree/v2)
+* [github.com/asaskevich/govalidator](https://github.com/asaskevich/govalidator)
+* [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
+* [github.com/mitchellh/go-homedir](https://github.com/mitchellh/go-homedir)
 * [github.com/spf13/pflag](https://github.com/spf13/pflag)
 * [github.com/tamada/lioss](https://github.com/tamada/lioss)
 

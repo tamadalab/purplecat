@@ -11,9 +11,13 @@ type ActType int
 const NETWORK_ACCESS ActType = iota + 1
 
 type DependencyTree struct {
-	ProjectName  string
+	ProjectInfo  ProjectInfo
 	Licenses     []*License
 	Dependencies []*DependencyTree
+}
+
+type ProjectInfo interface {
+	Name() string
 }
 
 type Context struct {
