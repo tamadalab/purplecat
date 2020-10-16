@@ -3,6 +3,7 @@ package purplecat
 import (
 	"encoding/xml"
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -14,7 +15,7 @@ import (
 
 const (
 	LOCAL_MAVEN_REPOSITORY   = ".m2/repository"
-	MAVEN_CENTRAL_REPOSITORY = "https://repo.maven.apache.org/maven2/"
+	MAVEN_CENTRAL_REPOSITORY = "repo.maven.apache.org/maven2/"
 )
 
 type artifact struct {
@@ -26,7 +27,11 @@ type artifact struct {
 }
 
 func getStringByXPath(xpath string, node *xmlpath.Node) (string, bool) {
-	return xmlpath.MustCompile(xpath).String(node)
+	str, ok := xmlpath.MustCompile(xpath).String(node)
+	if ok {
+		return strings.TrimSpace(str), ok
+	}
+	return str, ok
 }
 
 func newArtifact(node *xmlpath.Node) *artifact {
@@ -87,7 +92,7 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
-	logger.Debugf("parsePom(%s, %d)", pomPath.Path, currentDepth)
+	logger.Infof("parsePom(%s, %d)", pomPath.Path, currentDepth)
 	pom, err := pomPath.Open(context)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -138,8 +143,8 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 }
 
 func constructCentralRepoPomPath(artifact *artifact) *Path {
-	url := fmt.Sprintf("%s/%s", MAVEN_CENTRAL_REPOSITORY, artifact.repoPath())
-	return NewPath(url)
+	url := path.Join(MAVEN_CENTRAL_REPOSITORY, artifact.pomPath())
+	return NewPath("https://" + url)
 }
 
 func constructLocalPomPath(artifact *artifact) *Path {

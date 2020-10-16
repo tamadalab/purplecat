@@ -16,7 +16,7 @@ func TestGetLicenses(t *testing.T) {
 	}
 	for _, td := range testdata {
 		repo := NewGitHubRepository(td.user, td.repo)
-		license, err := repo.GetLicense(NewContext(true, "json", 1))
+		license, err := repo.GetLicense(NewContext(false, "json", 1))
 		if td.isError == (err == nil) {
 			t.Errorf("wont error: %v, got %v", td.isError, err == nil)
 		}

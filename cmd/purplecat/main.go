@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	flag "github.com/spf13/pflag"
 	"github.com/tamadalab/purplecat"
@@ -12,9 +13,7 @@ import (
 
 type options struct {
 	dest     string
-	offline  bool
-	format   string
-	depth    int
+	context  *purplecat.Context
 	helpFlag bool
 	args     []string
 }
@@ -39,45 +38,66 @@ func helpMessage(progName string) string {
 	return fmt.Sprintf(`%s version %s
 %s [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -d, --depth <DEPTH>      specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>    specifies the format of the result. Default is 'markdown'.
-                             Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -o, --output <FILE>      specifies the destination file (default: STDOUT).
-    -N, --offline            offline mode (no network access).
+    -d, --depth <DEPTH>       specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
+                              Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
+                              Available values are: DEBUG, INFO, WARN, SEVERE
+    -o, --output <FILE>       specifies the destination file (default: STDOUT).
+    -N, --offline             offline mode (no network access).
 
-    -h, --help               prints this message.
+    -h, --help                prints this message.
 PROJECT
 	target project for extracting dependent libraries and their licenses.
 BUILD_FILE
-    build file of the project for extracting dependent libraries and their licenses`, name, purplecat.VERSION, name)
+	build file of the project for extracting dependent libraries and their licenses
+
+purplecat support `, name, purplecat.VERSION, name)
 
 }
 
 func printError(err error, status int) int {
 	if err != nil {
-		fmt.Println(err.Error())
+		logger.Severe(err.Error())
 		return status
 	}
 	return 0
 }
 
-func constructFlags(args []string, opts *options) *flag.FlagSet {
+func constructFlags(args []string, opts *options, logLevel *string) *flag.FlagSet {
 	flags := flag.NewFlagSet("purplecat", flag.ContinueOnError)
 	flags.Usage = func() { fmt.Println(helpMessage(args[0])) }
-	flags.BoolVarP(&opts.offline, "offline", "N", false, "offline mode (no network access)")
+	flags.BoolVarP(&opts.context.DenyNetworkAccess, "offline", "N", false, "offline mode (no network access)")
 	flags.BoolVarP(&opts.helpFlag, "help", "h", false, "print this message")
-	flags.IntVarP(&opts.depth, "depth", "d", 1, "specifies the depth for parsing")
+	flags.StringVarP(logLevel, "level", "l", "WARN", "specifies the log level")
+	flags.IntVarP(&opts.context.Depth, "depth", "d", 1, "specifies the depth for parsing")
 	flags.StringVarP(&opts.dest, "output", "o", "", "specifies the destination file (default: STDOUT)")
-	flags.StringVarP(&opts.format, "format", "f", "markdown", "specifies the result format (default: markdown).")
+	flags.StringVarP(&opts.context.Format, "format", "f", "markdown", "specifies the result format (default: markdown).")
 	return flags
 }
 
+func updateLogLevel(level string) {
+	level = strings.ToLower(level)
+	switch level {
+	case "debug":
+		logger.SetLevel(logger.DEBUG)
+	case "info":
+		logger.SetLevel(logger.INFO)
+	case "warn":
+		logger.SetLevel(logger.WARN)
+	case "severe":
+		logger.SetLevel(logger.SEVERE)
+	}
+}
+
 func parseArgs(args []string) (*options, int, error) {
-	opts := &options{}
-	flags := constructFlags(args, opts)
+	opts := &options{context: &purplecat.Context{}}
+	var logLevel string
+	flags := constructFlags(args, opts, &logLevel)
 	if err := flags.Parse(args); err != nil {
 		return opts, 1, err
 	}
+	updateLogLevel(logLevel)
 	opts.args = flags.Args()[1:]
 	if opts.isHelpFlag() {
 		return opts, 0, fmt.Errorf(helpMessage(args[0]))
@@ -94,18 +114,17 @@ func performEach(projectPath string, context *purplecat.Context) (*purplecat.Dep
 }
 
 func perform(opts *options) int {
-	context := purplecat.NewContext(!opts.offline, opts.format, opts.depth)
 	dest, err := opts.destination()
 	if err != nil {
 		return printError(err, 9)
 	}
-	writer, err2 := context.NewWriter(dest)
+	writer, err2 := opts.context.NewWriter(dest)
 	if err2 != nil {
 		return printError(err2, 8)
 	}
 
 	for _, project := range opts.args {
-		tree, err := performEach(project, context)
+		tree, err := performEach(project, opts.context)
 		if err != nil {
 			return printError(err, 2)
 		}
@@ -128,5 +147,5 @@ func main() {
 }
 
 func init() {
-	logger.SetLevel(logger.DEBUG)
+	logger.SetLevel(logger.WARN)
 }
