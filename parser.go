@@ -25,5 +25,5 @@ func (context *Context) GenerateParser(givenPath string) (Parser, error) {
 			return parser, nil
 		}
 	}
-	return nil, fmt.Errorf("%s: cannot parse the project", path)
+	return nil, fmt.Errorf("%s: cannot parse the project", givenPath)
 }

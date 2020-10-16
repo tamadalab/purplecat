@@ -2,8 +2,9 @@
 [![Coverage Status](https://coveralls.io/repos/github/tamadalab/purplecat/badge.svg?branch=main)](https://coveralls.io/github/tamadalab/purplecat?branch=main)
 [![codebeat badge](https://codebeat.co/badges/760a8a6f-2675-4a71-9a77-07c33a807192)](https://codebeat.co/projects/github-com-tamadalab-purplecat-main)
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamadalab/purplecat)](https://goreportcard.com/report/github.com/tamadalab/purplecat)
+
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-1.0.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/Version-0.1.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.1.0)
 
 # :cat: purplecat
 
@@ -17,18 +18,25 @@ For this, `purplecat` finds the dependent libraries and their licenses.
 
 ```sh
 $ purplecat -h
-purplecat version 1.0.0
-purplecat [OPTIONS] <PROJECTs...>
+purplecat version 0.1.0
+purplecat [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -d, --depth <DEPTH>      specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>    specifies the format of the result. Default is 'markdown'.
-                             Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -o, --output <FILE>      specifies the destination file (default: STDOUT).
-    -N, --offline            offline mode (no network access).
+    -d, --depth <DEPTH>       specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
+                              Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
+                              Available values are: DEBUG, INFO, WARN, SEVERE
+    -o, --output <FILE>       specifies the destination file (default: STDOUT).
+    -N, --offline             offline mode (no network access).
 
-    -h, --help               prints this message.
+    -h, --help                prints this message.
 PROJECT
-    target project for extracting related libraries and their licenses.
+    target project for extracting dependent libraries and their licenses.
+BUILD_FILE
+    build file of the project for extracting dependent libraries and their licenses
+
+purplecat support the projects using the following build tools.
+    * Maven 3 (pom.xml)
 ```
 
 ### Resultant Format

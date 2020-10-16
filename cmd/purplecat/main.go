@@ -48,12 +48,12 @@ OPTIONS
 
     -h, --help                prints this message.
 PROJECT
-	target project for extracting dependent libraries and their licenses.
+    target project for extracting dependent libraries and their licenses.
 BUILD_FILE
-	build file of the project for extracting dependent libraries and their licenses
+    build file of the project for extracting dependent libraries and their licenses
 
-purplecat support `, name, purplecat.VERSION, name)
-
+purplecat support the projects using the following build tools.
+    * Maven 3 (pom.xml)`, name, purplecat.VERSION, name)
 }
 
 func printError(err error, status int) int {
@@ -90,19 +90,16 @@ func updateLogLevel(level string) {
 	}
 }
 
-func parseArgs(args []string) (*options, int, error) {
+func parseArgs(args []string) (*options, error) {
 	opts := &options{context: &purplecat.Context{}}
 	var logLevel string
 	flags := constructFlags(args, opts, &logLevel)
 	if err := flags.Parse(args); err != nil {
-		return opts, 1, err
+		return opts, err
 	}
 	updateLogLevel(logLevel)
 	opts.args = flags.Args()[1:]
-	if opts.isHelpFlag() {
-		return opts, 0, fmt.Errorf(helpMessage(args[0]))
-	}
-	return opts, 0, nil
+	return opts, nil
 }
 
 func performEach(projectPath string, context *purplecat.Context) (*purplecat.DependencyTree, error) {
@@ -134,9 +131,13 @@ func perform(opts *options) int {
 }
 
 func goMain(args []string) int {
-	opts, status, err := parseArgs(args)
+	opts, err := parseArgs(args)
 	if err != nil {
-		return printError(err, status)
+		return printError(err, 1)
+	}
+	if opts.isHelpFlag() {
+		fmt.Println(helpMessage(args[0]))
+		return 0
 	}
 	return perform(opts)
 }
