@@ -11,15 +11,19 @@ type ActType int
 const NETWORK_ACCESS ActType = iota + 1
 
 type DependencyTree struct {
-	ProjectName  string
+	ProjectInfo  ProjectInfo
 	Licenses     []*License
 	Dependencies []*DependencyTree
 }
 
+type ProjectInfo interface {
+	Name() string
+}
+
 type Context struct {
-	AllowNetworkAccess bool
-	Format             string
-	Depth              int
+	DenyNetworkAccess bool
+	Format            string
+	Depth             int
 }
 
 var UNKNOWN_LICENSE = &License{Name: "unknown", SpdxId: "unknown", Url: ""}
@@ -30,13 +34,13 @@ type License struct {
 	Url    string `json:"url"`
 }
 
-func NewContext(allowNetworkAccess bool, format string, depth int) *Context {
-	return &Context{AllowNetworkAccess: allowNetworkAccess, Format: format, Depth: depth}
+func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
+	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth}
 }
 
 func (context *Context) Allow(actType ActType) bool {
 	if actType == NETWORK_ACCESS {
-		return context.AllowNetworkAccess
+		return !context.DenyNetworkAccess
 	}
 	return false
 }

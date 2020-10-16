@@ -10,6 +10,7 @@ import (
 
 	"github.com/asaskevich/govalidator"
 	"github.com/go-resty/resty/v2"
+	"github.com/tamadalab/purplecat/logger"
 )
 
 type Path struct {
@@ -75,13 +76,16 @@ func (ups *UrlPathSupporter) ExistFile(path string, context *Context) bool {
 	client := resty.New()
 	request := client.NewRequest()
 	response, err := request.Get(path)
-	return err != nil && response.StatusCode() != 404
+	result := (err != nil || response.StatusCode() != 404)
+	logger.Debugf("Exist(%s): %v (%d)", path, result, response.StatusCode())
+	return result
 }
 
 func (ups *UrlPathSupporter) Open(path string, context *Context) (io.ReadCloser, error) {
 	if !context.Allow(NETWORK_ACCESS) {
 		return nil, fmt.Errorf("network access denied")
 	}
+	logger.Debugf("Open(%s)", path)
 	resp, err := http.Get(path)
 	if err != nil {
 		return nil, err
@@ -106,13 +110,13 @@ func (lfps *LocalFilePathSupporter) Dir(filePath string) string {
 
 func (lfps *LocalFilePathSupporter) ExistFile(path string, context *Context) bool {
 	stat, err := os.Stat(path)
-	if err == nil && stat.Mode().IsRegular() {
-		return true
-	}
-	return false
+	result := err == nil && stat.Mode().IsRegular()
+	logger.Debugf("Exist(%s): %v", path, result)
+	return result
 }
 
 func (lfps *LocalFilePathSupporter) Open(path string, context *Context) (io.ReadCloser, error) {
+	logger.Debugf("Open(%s)", path)
 	pom, err := os.Open(path)
 	if err != nil {
 		return nil, err

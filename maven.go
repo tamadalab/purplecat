@@ -3,6 +3,7 @@ package purplecat
 import (
 	"encoding/xml"
 	"fmt"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -14,7 +15,7 @@ import (
 
 const (
 	LOCAL_MAVEN_REPOSITORY   = ".m2/repository"
-	MAVEN_CENTRAL_REPOSITORY = "https://repo.maven.apache.org/maven2/"
+	MAVEN_CENTRAL_REPOSITORY = "repo.maven.apache.org/maven2/"
 )
 
 type artifact struct {
@@ -26,7 +27,11 @@ type artifact struct {
 }
 
 func getStringByXPath(xpath string, node *xmlpath.Node) (string, bool) {
-	return xmlpath.MustCompile(xpath).String(node)
+	str, ok := xmlpath.MustCompile(xpath).String(node)
+	if ok {
+		return strings.TrimSpace(str), ok
+	}
+	return str, ok
 }
 
 func newArtifact(node *xmlpath.Node) *artifact {
@@ -36,7 +41,7 @@ func newArtifact(node *xmlpath.Node) *artifact {
 	return &artifact{groupID: groupID, artifactID: artifactID, version: version, valid: ok1 && ok2 && ok3}
 }
 
-func (artifact *artifact) String() string {
+func (artifact *artifact) Name() string {
 	return fmt.Sprintf("%s/%s/%s", artifact.groupID, artifact.artifactID, artifact.version)
 }
 
@@ -49,14 +54,32 @@ func (artifact *artifact) pomPath() string {
 	return fmt.Sprintf("%s/%s-%s.pom", artifact.repoPath(), artifact.artifactID, artifact.version)
 }
 
+func (artifact *artifact) isValid() bool {
+	return artifact.groupID != "" && artifact.artifactID != "" && artifact.version != ""
+}
+
 var cache = map[string]*DependencyTree{}
 
 type MavenParser struct {
 	context *Context
 }
 
+func isPom(fileName string) bool {
+	logger.Debugf("isPom(%s), %v", fileName, strings.HasSuffix(fileName, ".pom"))
+	return fileName == "pom.xml" || strings.HasSuffix(fileName, ".pom")
+}
+
+func (mp *MavenParser) IsTarget(path *Path, context *Context) bool {
+	base := path.Base()
+	if base == "pom.xml" || strings.HasSuffix(base, ".pom") {
+		return path.Exists(context)
+	}
+	join := path.Join("pom.xml")
+	return join.Exists(context)
+}
+
 func (mp *MavenParser) Parse(pomPath *Path) (*DependencyTree, error) {
-	if pomPath.Base() != "pom.xml" {
+	if !isPom(pomPath.Base()) {
 		pomPath = pomPath.Join("pom.xml")
 	}
 	if !pomPath.Exists(mp.context) {
@@ -69,7 +92,7 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
-	logger.Debugf("parsePom(%s, %d)", pomPath.Path, currentDepth)
+	logger.Infof("parsePom(%s, %d)", pomPath.Path, currentDepth)
 	pom, err := pomPath.Open(context)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -92,8 +115,17 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 }
 
 func hitCache(artifact *artifact) (*DependencyTree, bool) {
-	dep, ok := cache[artifact.String()]
+	dep, ok := cache[artifact.Name()]
 	return dep, ok
+}
+
+func findParentLicense(parent *artifact, context *Context, currentDepth int) []*License {
+	parentPomPath := constructLocalPomPath(parent)
+	dep, err := parsePom(parentPomPath, context, currentDepth)
+	if err != nil {
+		return []*License{}
+	}
+	return dep.Licenses
 }
 
 func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
@@ -103,21 +135,16 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 	}
 	licenses, ok := findLicensesFromPom(root)
 	if !ok && projectArtifact.parent != nil {
-		parentPomPath := constructLocalPomPath(projectArtifact.parent)
-		dep, err := parsePom(parentPomPath, context, currentDepth)
-		if err != nil {
-			return nil, err
-		}
-		licenses = dep.Licenses
+		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
 	}
-	project := &DependencyTree{ProjectName: projectArtifact.String(), Licenses: licenses}
-	cache[projectArtifact.String()] = project
-	return parseDependency(project, root, context, currentDepth)
+	project := &DependencyTree{ProjectInfo: projectArtifact, Licenses: licenses}
+	cache[projectArtifact.Name()] = project
+	return parseDependency(projectArtifact, project, root, context, currentDepth)
 }
 
 func constructCentralRepoPomPath(artifact *artifact) *Path {
-	url := fmt.Sprintf("%s/%s", MAVEN_CENTRAL_REPOSITORY, artifact.repoPath())
-	return NewPath(url)
+	url := path.Join(MAVEN_CENTRAL_REPOSITORY, artifact.pomPath())
+	return NewPath("https://" + url)
 }
 
 func constructLocalPomPath(artifact *artifact) *Path {
@@ -136,11 +163,22 @@ func constructPom(art *artifact, context *Context) (*Path, error) {
 			return pomPath, nil
 		}
 	}
-	return nil, fmt.Errorf("%s: pom not found", art.String())
+	return nil, fmt.Errorf("%s: pom not found", art.Name())
 }
 
-func nodeToDependencyTree(node *xmlpath.Node, context *Context, currentDepth int) *DependencyTree {
+func normalizeProject(target, base *artifact) *artifact {
+	if target.version == "${project.version}" {
+		target.version = base.version
+	}
+	if target.groupID == "${project.groupId}" {
+		target.groupID = base.groupID
+	}
+	return target
+}
+
+func nodeToDependencyTree(base *artifact, node *xmlpath.Node, context *Context, currentDepth int) *DependencyTree {
 	artifact := newArtifact(node)
+	artifact = normalizeProject(artifact, base)
 	pomPath, err := constructPom(artifact, context)
 	if err != nil {
 		return nil
@@ -149,10 +187,10 @@ func nodeToDependencyTree(node *xmlpath.Node, context *Context, currentDepth int
 	return dep
 }
 
-func parseDependency(project *DependencyTree, root *xmlpath.Node, context *Context, currentDepth int) (*DependencyTree, error) {
+func parseDependency(art *artifact, project *DependencyTree, root *xmlpath.Node, context *Context, currentDepth int) (*DependencyTree, error) {
 	dependencyPath := xmlpath.MustCompile("/project/dependencies/dependency")
 	for iter := dependencyPath.Iter(root); iter.Next(); {
-		dependency := nodeToDependencyTree(iter.Node(), context, currentDepth)
+		dependency := nodeToDependencyTree(art, iter.Node(), context, currentDepth)
 		project.Dependencies = append(project.Dependencies, dependency)
 	}
 	return project, nil
@@ -214,7 +252,7 @@ func merge(base, append *artifact) *artifact {
 		base.version = append.version
 	}
 	if !base.valid {
-		base.valid = base.groupID != "" && base.artifactID != "" && base.version != ""
+		base.valid = base.isValid()
 	}
 	return base
 }
