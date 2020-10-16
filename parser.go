@@ -16,8 +16,8 @@ type GradleParser struct {
 func (context *Context) GenerateParser(givenPath string) (Parser, error) {
 	parsers := []Parser{
 		&MavenParser{context: context},
+		&GoModParser{context: context},
 		// {"build.gradle", &GradleParser{context: context}},
-		// {"go.mod", &GoModParser{context: context}},
 	}
 	path := NewPath(givenPath)
 	for _, parser := range parsers {

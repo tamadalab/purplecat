@@ -69,20 +69,24 @@ func (cw *CsvWriter) writeImpl(tree *DependencyTree, parent string) {
 }
 
 func (jw *JsonWriter) Write(tree *DependencyTree) error {
-	jw.Out.Write([]byte(jw.JsonString(tree)))
+	jw.Out.Write([]byte(jw.jsonString(tree)))
 	return nil
 }
 
-func (jw *JsonWriter) JsonString(tree *DependencyTree) string {
+func (jw *JsonWriter) dependency(deps []*DependencyTree) string {
 	array := []string{}
-	for _, dep := range tree.Dependencies {
+	for _, dep := range deps {
 		if dep != nil {
-			array = append(array, jw.JsonString(dep))
+			array = append(array, jw.jsonString(dep))
 		}
 	}
+	return fmt.Sprintf(`,"dependencies":[%s]`, strings.Join(array, ","))
+}
+
+func (jw *JsonWriter) jsonString(tree *DependencyTree) string {
 	dependentString := ""
-	if len(array) > 0 {
-		dependentString = fmt.Sprintf(`,"dependencies":[%s]`, strings.Join(array, ","))
+	if len(tree.Dependencies) > 0 {
+		dependentString = jw.dependency(tree.Dependencies)
 	}
 	return fmt.Sprintf(`{"project-name":"%s","license-names":["%s"]%s}`, tree.ProjectInfo.Name(), joinLicenseNames(tree), dependentString)
 }

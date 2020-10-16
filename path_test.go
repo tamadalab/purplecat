@@ -23,6 +23,31 @@ func TestExists(t *testing.T) {
 	}
 }
 
+func TestOpen(t *testing.T) {
+	testdata := []struct {
+		path        string
+		denyNetwork bool
+		successFlag bool
+	}{
+		{"./path.go", true, true},
+		{"./path.go", false, true},
+		{"https://github.com/tamadalab/purplecat", false, true},
+		{"https://github.com/tamadalab/purplecat", true, false},
+	}
+
+	for _, td := range testdata {
+		context := NewContext(td.denyNetwork, "json", 1)
+		path := NewPath(td.path)
+		file, err := path.Open(context)
+		if (err == nil) != td.successFlag {
+			t.Errorf("%s: open wont %v, got %v (deny network %v)", td.path, td.successFlag, !td.successFlag, td.denyNetwork)
+		}
+		if err == nil {
+			defer file.Close()
+		}
+	}
+}
+
 func TestBase(t *testing.T) {
 	testdata := []struct {
 		path     string
@@ -59,3 +84,21 @@ func TestDir(t *testing.T) {
 	}
 }
 
+func TestJoin(t *testing.T) {
+	testdata := []struct {
+		basePath   string
+		appendPath string
+		wontResult string
+	}{
+		{"cmd", "purplecat/main.go", "cmd/purplecat/main.go"},
+		{"https://github.com/tamadalab/", "purplecat", "https://github.com/tamadalab/purplecat"},
+	}
+
+	for _, td := range testdata {
+		path := NewPath(td.basePath)
+		gotPath := path.Join(td.appendPath)
+		if gotPath.Path != td.wontResult {
+			t.Errorf(`"%s".Join("%s") did not match, wont %s, got %s`, td.basePath, td.appendPath, td.wontResult, gotPath.Path)
+		}
+	}
+}

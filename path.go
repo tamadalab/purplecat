@@ -29,7 +29,9 @@ type Path struct {
 func NewPath(path string) *Path {
 	if govalidator.IsURL(path) {
 		if url, err := url.Parse(path); err == nil {
-			return &Path{Path: path, url: url, supporter: &urlPathSupporter{}}
+			if url.Host != "" && url.Scheme != "" {
+				return &Path{Path: path, url: url, supporter: &urlPathSupporter{}}
+			}
 		}
 	}
 	return &Path{Path: path, supporter: &localFilePathSupporter{}}
