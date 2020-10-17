@@ -27,11 +27,9 @@ type Path struct {
  * NewPath creates an pointer of Path represents the given location.
  */
 func NewPath(path string) *Path {
-	if govalidator.IsURL(path) {
-		if url, err := url.Parse(path); err == nil {
-			if url.Host != "" && url.Scheme != "" {
-				return &Path{Path: path, url: url, supporter: &urlPathSupporter{}}
-			}
+	if url, err := url.Parse(path); err == nil {
+		if url.Host != "" && url.Scheme != "" && govalidator.IsURL(path) {
+			return &Path{Path: path, url: url, supporter: &urlPathSupporter{}}
 		}
 	}
 	return &Path{Path: path, supporter: &localFilePathSupporter{}}

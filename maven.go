@@ -20,26 +20,27 @@ type artifact struct {
 	groupID    string
 	artifactID string
 	version    string
-	valid      bool
+	properties map[string]string
 	parent     *artifact
 }
 
 func getStringByXPath(xpath string, node *xmlquery.Node) (string, bool) {
 	targetNode, err := xmlquery.Query(node, xpath)
-	if err != nil {
-		return "", false
-	}
-	if targetNode == nil {
+	if err != nil || targetNode == nil {
 		return "", false
 	}
 	return strings.TrimSpace(targetNode.InnerText()), true
 }
 
 func newArtifact(node *xmlquery.Node) *artifact {
-	groupID, ok1 := getStringByXPath("./groupId", node)
-	artifactID, ok2 := getStringByXPath("./artifactId", node)
-	version, ok3 := getStringByXPath("./version", node)
-	return &artifact{groupID: groupID, artifactID: artifactID, version: version, valid: ok1 && ok2 && ok3}
+	groupID, _ := getStringByXPath("./groupId", node)
+	artifactID, _ := getStringByXPath("./artifactId", node)
+	version, _ := getStringByXPath("./version", node)
+	props := map[string]string{}
+	props["project.version"] = version
+	props["project.groupId"] = groupID
+	props["project.artifactId"] = artifactID
+	return &artifact{groupID: groupID, artifactID: artifactID, version: version, properties: props}
 }
 
 func (artifact *artifact) Name() string {
@@ -93,7 +94,6 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
-	fmt.Printf("parsePom(%s, %d)\n", pomPath.Path, currentDepth)
 	logger.Infof("parsePom(%s, %d)", pomPath.Path, currentDepth)
 	pom, err := pomPath.Open(context)
 	if err != nil {
@@ -136,16 +136,13 @@ func findParentLicense(parent *artifact, context *Context, currentDepth int) []*
 	return dep.Licenses
 }
 
-func newProperties(node *xmlquery.Node) *map[string]string {
-	props := &map[string]string{}
+func readProperties(node *xmlquery.Node, artifact *artifact) {
 	list, err := xmlquery.QueryAll(node, "/project/properties/*")
-	if err != nil {
-		return props
+	if err == nil {
+		for _, property := range list {
+			artifact.properties[property.Data] = property.InnerText()
+		}
 	}
-	for _, property := range list {
-		(*props)[property.Data] = property.InnerText()
-	}
-	return props
 }
 
 func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
@@ -153,7 +150,7 @@ func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, 
 	if dep, ok := hitCache(projectArtifact); ok {
 		return dep, nil
 	}
-	newProperties(root)
+	readProperties(root, projectArtifact)
 	licenses, ok := findLicensesFromPom(projectArtifact, root)
 	if !ok && projectArtifact.parent != nil {
 		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
@@ -187,13 +184,18 @@ func constructPom(art *artifact, context *Context) (*Path, error) {
 	return nil, fmt.Errorf("%s: pom not found", art.Name())
 }
 
+func updateByProps(target string, props map[string]string) string {
+	for k, v := range props {
+		target = strings.ReplaceAll(target, fmt.Sprintf(`${%s}`, k), v)
+	}
+	return target
+}
+
 func normalizeProject(target, base *artifact) *artifact {
-	if target.version == "${project.version}" {
-		target.version = base.version
-	}
-	if target.groupID == "${project.groupId}" {
-		target.groupID = base.groupID
-	}
+	target.version = updateByProps(target.version, base.properties)
+	target.artifactID = updateByProps(target.artifactID, base.properties)
+	target.groupID = updateByProps(target.groupID, base.properties)
+
 	return target
 }
 
@@ -244,7 +246,7 @@ func parentArtifact(root *xmlquery.Node) (*artifact, bool) {
 		return nil, false
 	}
 	parent := newArtifact(parentNode)
-	return parent, parent.valid
+	return parent, parent.isValid()
 }
 
 func parseProjectInfo(root *xmlquery.Node) *artifact {
@@ -254,7 +256,7 @@ func parseProjectInfo(root *xmlquery.Node) *artifact {
 		return nil
 	}
 	artifact := newArtifact(node)
-	if !artifact.valid {
+	if !artifact.isValid() {
 		parent, ok := parentArtifact(root)
 		if ok {
 			merge(artifact, parent)
@@ -270,9 +272,6 @@ func merge(base, append *artifact) *artifact {
 	}
 	if base.version == "" {
 		base.version = append.version
-	}
-	if !base.valid {
-		base.valid = base.isValid()
 	}
 	return base
 }
