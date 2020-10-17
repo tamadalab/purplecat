@@ -128,11 +128,23 @@ func findParentLicense(parent *artifact, context *Context, currentDepth int) []*
 	return dep.Licenses
 }
 
+type properties map[string]string
+
+func newProperties(node *xmlpath.Node) *properties {
+	propertiesPath := xmlpath.MustCompile("/project/properties")
+	iter := propertiesPath.Iter(node)
+	for iter.Next() {
+		fmt.Println(iter.Node().Bytes())
+	}
+	return &properties{}
+}
+
 func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
 	projectArtifact := parseProjectInfo(root)
 	if dep, ok := hitCache(projectArtifact); ok {
 		return dep, nil
 	}
+	newProperties(root)
 	licenses, ok := findLicensesFromPom(root)
 	if !ok && projectArtifact.parent != nil {
 		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
