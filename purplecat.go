@@ -8,7 +8,7 @@ import (
 
 type ActType int
 
-const NETWORK_ACCESS ActType = iota + 1
+const NetworkAccessFlag ActType = iota + 1
 
 type DependencyTree struct {
 	ProjectInfo  ProjectInfo
@@ -26,12 +26,12 @@ type Context struct {
 	Depth             int
 }
 
-var UNKNOWN_LICENSE = &License{Name: "unknown", SpdxId: "unknown", Url: ""}
+var UnknownLicense = &License{Name: "unknown", SpdxID: "unknown", URL: ""}
 
 type License struct {
 	Name   string `json:"name"`
-	SpdxId string `json:"spdx_id"`
-	Url    string `json:"url"`
+	SpdxID string `json:"spdx_id"`
+	URL    string `json:"url"`
 }
 
 func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
@@ -39,7 +39,7 @@ func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
 }
 
 func (context *Context) Allow(actType ActType) bool {
-	if actType == NETWORK_ACCESS {
+	if actType == NetworkAccessFlag {
 		return !context.DenyNetworkAccess
 	}
 	return false
@@ -50,13 +50,13 @@ func (context *Context) NewWriter(out io.Writer) (Writer, error) {
 	case "csv":
 		return &CsvWriter{Out: out}, nil
 	case "json":
-		return &JsonWriter{Out: out}, nil
+		return &JSONWriter{Out: out}, nil
 	case "toml":
 		return &TomlWriter{Out: out}, nil
 	case "yaml", "yml":
 		return &YamlWriter{Out: out}, nil
 	case "xml":
-		return &XmlWriter{Out: out}, nil
+		return &XMLWriter{Out: out}, nil
 	case "markdown", "md":
 		return &MarkdownWriter{Out: out}, nil
 	default:

@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	LOCAL_MAVEN_REPOSITORY   = ".m2/repository"
-	MAVEN_CENTRAL_REPOSITORY = "repo.maven.apache.org/maven2/"
+	localMavenRepository   = ".m2/repository"
+	mavenCentralRepository = "repo.maven.apache.org/maven2/"
 )
 
 type artifact struct {
@@ -143,13 +143,13 @@ func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, c
 }
 
 func constructCentralRepoPomPath(artifact *artifact) *Path {
-	url := path.Join(MAVEN_CENTRAL_REPOSITORY, artifact.pomPath())
+	url := path.Join(mavenCentralRepository, artifact.pomPath())
 	return NewPath("https://" + url)
 }
 
 func constructLocalPomPath(artifact *artifact) *Path {
 	home, _ := homedir.Dir()
-	return NewPath(filepath.Join(home, LOCAL_MAVEN_REPOSITORY, artifact.pomPath()))
+	return NewPath(filepath.Join(home, localMavenRepository, artifact.pomPath()))
 }
 
 func constructPom(art *artifact, context *Context) (*Path, error) {
@@ -199,7 +199,7 @@ func parseDependency(art *artifact, project *DependencyTree, root *xmlpath.Node,
 func buildLicense(licenseNode *xmlpath.Node) *License {
 	licenseName, _ := getStringByXPath("name", licenseNode)
 	url, _ := getStringByXPath("url", licenseNode)
-	return &License{Name: licenseName, Url: url}
+	return &License{Name: licenseName, URL: url}
 }
 
 func findLicensesFromPom(root *xmlpath.Node) ([]*License, bool) {

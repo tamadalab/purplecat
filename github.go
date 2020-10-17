@@ -6,14 +6,17 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-const GITHUB_API_ENDPOINT = "https://api.github.com"
+const gitHubAPIEndPoint = "https://api.github.com"
 
+/*
+ * GitHubRepository represents the repository name in the GitHub.
+ */
 type GitHubRepository struct {
 	UserName       string
 	RepositoryName string
 }
 
-type githubApiResponse struct {
+type githubAPIResponse struct {
 	License *License `json:"license"`
 }
 
@@ -21,31 +24,31 @@ func NewGitHubRepository(userName, repoName string) *GitHubRepository {
 	return &GitHubRepository{UserName: userName, RepositoryName: repoName}
 }
 
-func (repo *GitHubRepository) infoUrl() string {
-	return fmt.Sprintf("%s/repos/%s/%s", GITHUB_API_ENDPOINT, repo.UserName, repo.RepositoryName)
+func (repo *GitHubRepository) infoURL() string {
+	return fmt.Sprintf("%s/repos/%s/%s", gitHubAPIEndPoint, repo.UserName, repo.RepositoryName)
 }
 
 func (repo *GitHubRepository) GetLicense(context *Context) (*License, error) {
-	if !context.Allow(NETWORK_ACCESS) {
+	if !context.Allow(NetworkAccessFlag) {
 		return nil, fmt.Errorf("network access denide")
 	}
-	return findLicensesByGitHubApi(repo)
+	return findLicensesByGitHubAPI(repo)
 }
 
-func findLicensesByGitHubApi(repo *GitHubRepository) (*License, error) {
+func findLicensesByGitHubAPI(repo *GitHubRepository) (*License, error) {
 	client := resty.New()
 	request := client.NewRequest()
-	request = request.SetResult(&githubApiResponse{})
-	response, err := request.Get(repo.infoUrl())
+	request = request.SetResult(&githubAPIResponse{})
+	response, err := request.Get(repo.infoURL())
 	if err != nil {
 		return nil, err
 	}
 	if response.StatusCode() == 404 {
 		return nil, fmt.Errorf("%s/%s: repository not found", repo.UserName, repo.RepositoryName)
 	}
-	json := response.Result().(*githubApiResponse)
+	json := response.Result().(*githubAPIResponse)
 	if json.License == nil {
-		return UNKNOWN_LICENSE, nil
+		return UnknownLicense, nil
 	}
 	return json.License, nil
 }

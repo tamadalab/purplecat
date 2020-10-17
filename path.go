@@ -99,20 +99,19 @@ func (ups *urlPathSupporter) Base(urlPath *Path) string {
 }
 
 func (ups *urlPathSupporter) Join(base *Path, append string) string {
-	newUrl := *base.url
-	newUrl.Path = path.Join(newUrl.Path, append)
-	return newUrl.String()
+	newURL := *base.url
+	newURL.Path = path.Join(newURL.Path, append)
+	return newURL.String()
 }
 
 func (ups *urlPathSupporter) Dir(urlPath *Path) string {
-	newUrl := *urlPath.url
-	newUrl.Path = path.Dir(newUrl.Path)
-	fmt.Printf("NewUrl(%s), OldUrl(%s)\n", newUrl.String(), urlPath.url.String())
-	return newUrl.String()
+	newURL := *urlPath.url
+	newURL.Path = path.Dir(newURL.Path)
+	return newURL.String()
 }
 
 func (ups *urlPathSupporter) ExistFile(path *Path, context *Context) bool {
-	if !context.Allow(NETWORK_ACCESS) {
+	if !context.Allow(NetworkAccessFlag) {
 		return false
 	}
 	client := resty.New()
@@ -124,13 +123,17 @@ func (ups *urlPathSupporter) ExistFile(path *Path, context *Context) bool {
 }
 
 func (ups *urlPathSupporter) Open(path *Path, context *Context) (io.ReadCloser, error) {
-	if !context.Allow(NETWORK_ACCESS) {
+	if !context.Allow(NetworkAccessFlag) {
 		return nil, fmt.Errorf("network access denied")
 	}
 	logger.Debugf("Open(%s)", path.url.String())
 	resp, err := http.Get(path.Path)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode == 404 {
+		defer resp.Body.Close()
+		return nil, fmt.Errorf("%s: 404 not found", path.Path)
 	}
 	return resp.Body, nil
 }

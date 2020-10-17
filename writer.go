@@ -16,7 +16,7 @@ type MarkdownWriter struct {
 type CsvWriter struct {
 	Out io.Writer
 }
-type JsonWriter struct {
+type JSONWriter struct {
 	Out io.Writer
 }
 type YamlWriter struct {
@@ -25,7 +25,7 @@ type YamlWriter struct {
 type TomlWriter struct {
 	Out io.Writer
 }
-type XmlWriter struct {
+type XMLWriter struct {
 	Out io.Writer
 }
 
@@ -68,12 +68,12 @@ func (cw *CsvWriter) writeImpl(tree *DependencyTree, parent string) {
 	}
 }
 
-func (jw *JsonWriter) Write(tree *DependencyTree) error {
+func (jw *JSONWriter) Write(tree *DependencyTree) error {
 	jw.Out.Write([]byte(jw.jsonString(tree)))
 	return nil
 }
 
-func (jw *JsonWriter) dependency(deps []*DependencyTree) string {
+func (jw *JSONWriter) dependency(deps []*DependencyTree) string {
 	array := []string{}
 	for _, dep := range deps {
 		if dep != nil {
@@ -83,7 +83,7 @@ func (jw *JsonWriter) dependency(deps []*DependencyTree) string {
 	return fmt.Sprintf(`,"dependencies":[%s]`, strings.Join(array, ","))
 }
 
-func (jw *JsonWriter) jsonString(tree *DependencyTree) string {
+func (jw *JSONWriter) jsonString(tree *DependencyTree) string {
 	dependentString := ""
 	if len(tree.Dependencies) > 0 {
 		dependentString = jw.dependency(tree.Dependencies)
@@ -127,7 +127,7 @@ func (tw *TomlWriter) Write(tree *DependencyTree) error {
 	return nil
 }
 
-func (xw *XmlWriter) Write(tree *DependencyTree) error {
+func (xw *XMLWriter) Write(tree *DependencyTree) error {
 	data := fmt.Sprintf(`<?xml version="1.0"?>
 <purplecat>
 %s
@@ -136,7 +136,7 @@ func (xw *XmlWriter) Write(tree *DependencyTree) error {
 	return nil
 }
 
-func (xw *XmlWriter) string(tree *DependencyTree, indent string) string {
+func (xw *XMLWriter) string(tree *DependencyTree, indent string) string {
 	xmlLicenses := []string{}
 	for _, license := range tree.Licenses {
 		xmlLicenses = append(xmlLicenses, indent+"  <license-name>"+license.Name+"</license-name>")

@@ -6,9 +6,9 @@ type GoModParser struct {
 	context *Context
 }
 
-const PKG_GO_DEV_URL = "https://pkg.go.dev"
+const pkgGoDevURL = "https://pkg.go.dev"
 
-func (mp *GoModParser) IsTarget(path *Path, context *Context) bool {
+func (gmp *GoModParser) IsTarget(path *Path, context *Context) bool {
 	base := path.Base()
 	if base == "go.mod" {
 		return path.Exists(context)
@@ -22,7 +22,7 @@ func (gmp *GoModParser) Parse(path *Path) (*DependencyTree, error) {
 }
 
 func FindLicenseFromPkgGoDev(path *Path, context *Context) (*DependencyTree, error) {
-	if !context.Allow(NETWORK_ACCESS) {
+	if !context.Allow(NetworkAccessFlag) {
 		return nil, fmt.Errorf("network access denied")
 	}
 	return nil, nil

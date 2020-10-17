@@ -31,8 +31,12 @@ func TestOpen(t *testing.T) {
 	}{
 		{"./path.go", true, true},
 		{"./path.go", false, true},
+		{"./unknown_file", true, false},
+		{"./unknown_file", false, false},
 		{"https://github.com/tamadalab/purplecat", false, true},
 		{"https://github.com/tamadalab/purplecat", true, false},
+		{"https://github.com/tamadalab/unknownproject", false, false},
+		{"https://github.com/tamadalab/unknownproject", true, false},
 	}
 
 	for _, td := range testdata {
