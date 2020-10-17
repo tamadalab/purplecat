@@ -125,9 +125,12 @@ func hitCache(artifact *artifact) (*DependencyTree, bool) {
 }
 
 func findParentLicense(parent *artifact, context *Context, currentDepth int) []*License {
-	parentPomPath := constructLocalPomPath(parent)
-	dep, err := parsePom(parentPomPath, context, currentDepth)
-	if err != nil {
+	parentPomPath, err1 := constructPom(parent, context)
+	if err1 != nil {
+		return []*License{}
+	}
+	dep, err2 := parsePom(parentPomPath, context, currentDepth)
+	if err2 != nil {
 		return []*License{}
 	}
 	return dep.Licenses
