@@ -53,7 +53,7 @@ BUILD_FILE
     build file of the project for extracting dependent libraries and their licenses
 
 purplecat support the projects using the following build tools.
-    * Maven 3 (pom.xml)`, name, purplecat.VERSION, name)
+    * Maven 3 (pom.xml)`, name, purplecat.Version, name)
 }
 
 func printError(err error, status int) int {

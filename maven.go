@@ -1,16 +1,14 @@
 package purplecat
 
 import (
-	"encoding/xml"
 	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/antchfx/xmlquery"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/tamadalab/purplecat/logger"
-	"golang.org/x/net/html/charset"
-	"gopkg.in/xmlpath.v2"
 )
 
 const (
@@ -26,18 +24,21 @@ type artifact struct {
 	parent     *artifact
 }
 
-func getStringByXPath(xpath string, node *xmlpath.Node) (string, bool) {
-	str, ok := xmlpath.MustCompile(xpath).String(node)
-	if ok {
-		return strings.TrimSpace(str), ok
+func getStringByXPath(xpath string, node *xmlquery.Node) (string, bool) {
+	targetNode, err := xmlquery.Query(node, xpath)
+	if err != nil {
+		return "", false
 	}
-	return str, ok
+	if targetNode == nil {
+		return "", false
+	}
+	return strings.TrimSpace(targetNode.InnerText()), true
 }
 
-func newArtifact(node *xmlpath.Node) *artifact {
-	groupID, ok1 := getStringByXPath("groupId", node)
-	artifactID, ok2 := getStringByXPath("artifactId", node)
-	version, ok3 := getStringByXPath("version", node)
+func newArtifact(node *xmlquery.Node) *artifact {
+	groupID, ok1 := getStringByXPath("./groupId", node)
+	artifactID, ok2 := getStringByXPath("./artifactId", node)
+	version, ok3 := getStringByXPath("./version", node)
 	return &artifact{groupID: groupID, artifactID: artifactID, version: version, valid: ok1 && ok2 && ok3}
 }
 
@@ -92,26 +93,30 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (*DependencyTre
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
+	fmt.Printf("parsePom(%s, %d)\n", pomPath.Path, currentDepth)
 	logger.Infof("parsePom(%s, %d)", pomPath.Path, currentDepth)
 	pom, err := pomPath.Open(context)
 	if err != nil {
-		fmt.Println(err.Error())
 		return nil, err
 	}
 	defer pom.Close()
 
+	doc, err := xmlquery.Parse(pom)
+	if err != nil {
+		return nil, err
+	}
+	return constructDependencyTree(doc, pomPath.Dir(), context, currentDepth)
 	// "ISO-8859-1" encoded xml parse error.
 	// error message: xml: encoding "ISO-8859-1" declared but Decoder.CharsetReader is nil
 	// to resolve above problem, see https://stackoverflow.com/questions/6002619/unmarshal-an-iso-8859-1-xml-input-in-go
-	decoder := xml.NewDecoder(pom)
-	decoder.CharsetReader = charset.NewReaderLabel
+	// decoder := xml.NewDecoder(pom)
+	// decoder.CharsetReader = charset.NewReaderLabel
 
-	root, err := xmlpath.ParseDecoder(decoder)
-	if err != nil {
-		fmt.Println(err.Error())
-		return nil, err
-	}
-	return constructDependencyTree(root, pomPath.Dir(), context, currentDepth)
+	// root, err := xmlpath.ParseDecoder(decoder)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return constructDependencyTree(root, pomPath.Dir(), context, currentDepth)
 }
 
 func hitCache(artifact *artifact) (*DependencyTree, bool) {
@@ -128,24 +133,25 @@ func findParentLicense(parent *artifact, context *Context, currentDepth int) []*
 	return dep.Licenses
 }
 
-type properties map[string]string
-
-func newProperties(node *xmlpath.Node) *properties {
-	propertiesPath := xmlpath.MustCompile("/project/properties")
-	iter := propertiesPath.Iter(node)
-	for iter.Next() {
-		fmt.Println(iter.Node().Bytes())
+func newProperties(node *xmlquery.Node) *map[string]string {
+	props := &map[string]string{}
+	list, err := xmlquery.QueryAll(node, "/project/properties/*")
+	if err != nil {
+		return props
 	}
-	return &properties{}
+	for _, property := range list {
+		(*props)[property.Data] = property.InnerText()
+	}
+	return props
 }
 
-func constructDependencyTree(root *xmlpath.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
+func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, currentDepth int) (*DependencyTree, error) {
 	projectArtifact := parseProjectInfo(root)
 	if dep, ok := hitCache(projectArtifact); ok {
 		return dep, nil
 	}
 	newProperties(root)
-	licenses, ok := findLicensesFromPom(root)
+	licenses, ok := findLicensesFromPom(projectArtifact, root)
 	if !ok && projectArtifact.parent != nil {
 		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
 	}
@@ -188,7 +194,7 @@ func normalizeProject(target, base *artifact) *artifact {
 	return target
 }
 
-func nodeToDependencyTree(base *artifact, node *xmlpath.Node, context *Context, currentDepth int) *DependencyTree {
+func nodeToDependencyTree(base *artifact, node *xmlquery.Node, context *Context, currentDepth int) *DependencyTree {
 	artifact := newArtifact(node)
 	artifact = normalizeProject(artifact, base)
 	pomPath, err := constructPom(artifact, context)
@@ -199,53 +205,52 @@ func nodeToDependencyTree(base *artifact, node *xmlpath.Node, context *Context, 
 	return dep
 }
 
-func parseDependency(art *artifact, project *DependencyTree, root *xmlpath.Node, context *Context, currentDepth int) (*DependencyTree, error) {
-	dependencyPath := xmlpath.MustCompile("/project/dependencies/dependency")
-	for iter := dependencyPath.Iter(root); iter.Next(); {
-		dependency := nodeToDependencyTree(art, iter.Node(), context, currentDepth)
+func parseDependency(art *artifact, project *DependencyTree, root *xmlquery.Node, context *Context, currentDepth int) (*DependencyTree, error) {
+	dependencies, err := xmlquery.QueryAll(root, "/project/dependencies/dependency")
+	if err != nil {
+		return project, err
+	}
+	for _, dep := range dependencies {
+		dependency := nodeToDependencyTree(art, dep, context, currentDepth)
 		project.Dependencies = append(project.Dependencies, dependency)
 	}
 	return project, nil
 }
 
-func buildLicense(licenseNode *xmlpath.Node) *License {
+func buildLicense(licenseNode *xmlquery.Node) *License {
 	licenseName, _ := getStringByXPath("name", licenseNode)
 	url, _ := getStringByXPath("url", licenseNode)
 	return &License{Name: licenseName, URL: url}
 }
 
-func findLicensesFromPom(root *xmlpath.Node) ([]*License, bool) {
-	licenseNamePath := xmlpath.MustCompile("/project/licenses/license")
+func findLicensesFromPom(artifact *artifact, root *xmlquery.Node) ([]*License, bool) {
+	list, err := xmlquery.QueryAll(root, "/project/licenses/license")
 	licenses := []*License{}
-	if licenseNamePath.Exists(root) {
-		for iter := licenseNamePath.Iter(root); iter.Next(); {
-			licenses = append(licenses, buildLicense(iter.Node()))
-		}
-		return licenses, true
+	if err != nil {
+		return licenses, false
 	}
-	return licenses, false
+	for _, license := range list {
+		licenses = append(licenses, buildLicense(license))
+	}
+	return licenses, len(licenses) > 0
 }
 
-func parentArtifact(root *xmlpath.Node) (*artifact, bool) {
-	parentPath := xmlpath.MustCompile("/project/parent")
-	if !parentPath.Exists(root) {
+func parentArtifact(root *xmlquery.Node) (*artifact, bool) {
+	parentNode, err := xmlquery.Query(root, "/project/parent")
+	if err != nil {
 		return nil, false
 	}
-	iter := parentPath.Iter(root)
-	if !iter.Next() {
-		return nil, false
-	}
-	parent := newArtifact(iter.Node())
+	parent := newArtifact(parentNode)
 	return parent, parent.valid
 }
 
-func parseProjectInfo(root *xmlpath.Node) *artifact {
-	projectPath := xmlpath.MustCompile("/project")
-	iter := projectPath.Iter(root)
-	if !iter.Next() {
+func parseProjectInfo(root *xmlquery.Node) *artifact {
+	node, err := xmlquery.Query(root, "/project")
+	// node, err := xmlquery.Query(root, "/project/(groupId,artifactId,version)")
+	if err != nil {
 		return nil
 	}
-	artifact := newArtifact(iter.Node())
+	artifact := newArtifact(node)
 	if !artifact.valid {
 		parent, ok := parentArtifact(root)
 		if ok {

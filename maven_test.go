@@ -21,10 +21,14 @@ func validateDependencyTree(t *testing.T, tree *DependencyTree, wontProjectName,
 	if tree.ProjectInfo.Name() != wontProjectName {
 		t.Errorf("project name did not match, wont %s, got %s", wontProjectName, tree.ProjectInfo.Name())
 	}
-	if tree.Licenses[0].Name != wontLicense {
-		t.Errorf("%s: license did not match, wont %s, got %s", wontProjectName, wontLicense, tree.Licenses[0].Name)
-	}
 	if len(tree.Dependencies) != wontDependencyCount {
 		t.Errorf("%s: dependency parse error: wont dependency count: %d, got %d", wontProjectName, wontDependencyCount, len(tree.Dependencies))
+	}
+	if len(tree.Licenses) == 0 {
+		t.Errorf("%s: license count is 0", wontProjectName)
+		return
+	}
+	if tree.Licenses[0].Name != wontLicense {
+		t.Errorf("%s: license did not match, wont %s, got %s", wontProjectName, wontLicense, tree.Licenses[0].Name)
 	}
 }

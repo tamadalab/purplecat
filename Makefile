@@ -13,7 +13,7 @@ update_version:
 	    sed -e 's!Version-[0-9.]*-yellowgreen!Version-${VERSION}-yellowgreen!g' -e 's!tag/v[0-9.]*!tag/v${VERSION}!g' $$i > a ; mv a $$i; \
 	done
 	@sed 's/ARG version=".*"/ARG version="${VERSION}"/g' Dockerfile > a ; mv a Dockerfile
-	@sed 's/const VERSION = .*/const VERSION = "${VERSION}"/g' version.go > a ; mv a version.go
+	@sed 's/const Version = .*/const Version = "${VERSION}"/g' version.go > a ; mv a version.go
 	@echo "Replace version to \"${VERSION}\""	
 
 start:

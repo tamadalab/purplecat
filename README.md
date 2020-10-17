@@ -156,12 +156,11 @@ $ make
 
 ### Requirements
 
-* [gopkg.in/xmlpath.v2](https://github.com/go-xmlpath/xmlpath/tree/v2)
+* [github.com/antchfx/xmlquery](https://github.com/antchfx/xmlquery)
 * [github.com/asaskevich/govalidator](https://github.com/asaskevich/govalidator)
 * [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
 * [github.com/mitchellh/go-homedir](https://github.com/mitchellh/go-homedir)
 * [github.com/spf13/pflag](https://github.com/spf13/pflag)
-* [github.com/tamada/lioss](https://github.com/tamada/lioss)
 
 ## :smile: About
 
