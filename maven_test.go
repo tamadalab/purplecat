@@ -17,9 +17,9 @@ func TestParse(t *testing.T) {
 	validateDependencyTree(t, tree.Dependencies[1], "junit/junit/4.13.1", "Eclipse Public License 1.0", 2)
 }
 
-func validateDependencyTree(t *testing.T, tree *DependencyTree, wontProjectName, wontLicense string, wontDependencyCount int) {
-	if tree.ProjectInfo.Name() != wontProjectName {
-		t.Errorf("project name did not match, wont %s, got %s", wontProjectName, tree.ProjectInfo.Name())
+func validateDependencyTree(t *testing.T, tree *Project, wontProjectName, wontLicense string, wontDependencyCount int) {
+	if tree.Info.Name() != wontProjectName {
+		t.Errorf("project name did not match, wont %s, got %s", wontProjectName, tree.Info.Name())
 	}
 	if len(tree.Dependencies) != wontDependencyCount {
 		t.Errorf("%s: dependency parse error: wont dependency count: %d, got %d", wontProjectName, wontDependencyCount, len(tree.Dependencies))

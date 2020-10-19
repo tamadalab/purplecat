@@ -102,7 +102,7 @@ func parseArgs(args []string) (*options, error) {
 	return opts, nil
 }
 
-func performEach(projectPath string, context *purplecat.Context) (*purplecat.DependencyTree, error) {
+func performEach(projectPath string, context *purplecat.Context) (*purplecat.Project, error) {
 	parser, err := context.GenerateParser(projectPath)
 	if err != nil {
 		return nil, err

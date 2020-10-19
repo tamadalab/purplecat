@@ -14,18 +14,14 @@ import (
 	"github.com/tamadalab/purplecat/logger"
 )
 
-/*
- * Path shows the path for the build files or project directory located at local file or internet url.
- */
+/*Path shows the path for the build files or project directory located at local file or internet url. */
 type Path struct {
 	Path      string
 	url       *url.URL
 	supporter pathSupporter
 }
 
-/*
- * NewPath creates an pointer of Path represents the given location.
- */
+/*NewPath creates an pointer of Path represents the given location. */
 func NewPath(path string) *Path {
 	if url, err := url.Parse(path); err == nil {
 		if url.Host != "" && url.Scheme != "" && govalidator.IsURL(path) {
@@ -35,17 +31,16 @@ func NewPath(path string) *Path {
 	return &Path{Path: path, supporter: &localFilePathSupporter{}}
 }
 
-/*
- * Exists checks existtence of the receiver path.
- * If the receiver path shows url, and context denies the network access,
- * this function returns false.
- */
+/*Exists checks existtence of the receiver path.
+
+  If the receiver path shows url, and context denies the network access,
+  this function returns false. */
 func (path *Path) Exists(context *Context) bool {
 	return path.supporter.ExistFile(path, context)
 }
 
-/*
- * Base returns the base name of the receiver path.
+/*Base returns the base name of the receiver path.
+ *
  * Example:
  *     path := NewPath("/some/location/of/local/file")
  *     base := path.Base() // --> base is `file`
@@ -54,8 +49,8 @@ func (path *Path) Base() string {
 	return path.supporter.Base(path)
 }
 
-/*
- * Join add the given string to the receiver path, and returns new pointer of Path.
+/*Join add the given string to the receiver path, and returns new pointer of Path.
+ *
  * Example:
  *     path := NewPath("/some/location/of/local/file")
  *     path2 := path.Join("subfile") // --> base is `/some/location/of/local/file/subfile`
@@ -64,15 +59,13 @@ func (path *Path) Join(append string) *Path {
 	return NewPath(path.supporter.Join(path, append))
 }
 
-/*
- * Open returns ReadCloser for reading the content of the receiver path.
- */
+/*Open returns ReadCloser for reading the content of the receiver path. */
 func (path *Path) Open(context *Context) (io.ReadCloser, error) {
 	return path.supporter.Open(path, context)
 }
 
-/*
- * Dir returns the directory part of the receiver path.
+/*Dir returns the directory part of the receiver path.
+ *
  * Example:
  *     path := NewPath("/some/location/of/local/file")
  *     dir := path.Dir() // --> dir is `/some/location/of/local`

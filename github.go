@@ -24,8 +24,12 @@ func NewGitHubRepository(userName, repoName string) *GitHubRepository {
 	return &GitHubRepository{UserName: userName, RepositoryName: repoName}
 }
 
+func (repo *GitHubRepository) Name() string {
+	return fmt.Sprintf("%s/%s", repo.UserName, repo.RepositoryName)
+}
+
 func (repo *GitHubRepository) infoURL() string {
-	return fmt.Sprintf("%s/repos/%s/%s", gitHubAPIEndPoint, repo.UserName, repo.RepositoryName)
+	return fmt.Sprintf("%s/repos/%s", gitHubAPIEndPoint, repo.Name())
 }
 
 func (repo *GitHubRepository) GetLicense(context *Context) (*License, error) {
@@ -44,7 +48,7 @@ func findLicensesByGitHubAPI(repo *GitHubRepository) (*License, error) {
 		return nil, err
 	}
 	if response.StatusCode() == 404 {
-		return nil, fmt.Errorf("%s/%s: repository not found", repo.UserName, repo.RepositoryName)
+		return nil, fmt.Errorf("%s: repository not found", repo.Name())
 	}
 	json := response.Result().(*githubAPIResponse)
 	if json.License == nil {
