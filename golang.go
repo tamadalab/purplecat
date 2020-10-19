@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/antchfx/htmlquery"
+	"golang.org/x/net/html"
 
 	"github.com/tamadalab/purplecat/logger"
 )
@@ -52,5 +53,9 @@ func findLicenseViaPkgGoDevImpl(path *Path, context *Context, currentDepth int) 
 	if err != nil {
 		return nil, err
 	}
-	return 
+	return parseProject(doc)
+}
+
+func parseProject(root *html.Node) (*Project, error) {
+	return nil, nil
 }
