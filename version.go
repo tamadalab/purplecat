@@ -1,3 +1,4 @@
 package purplecat
 
-const VERSION = "1.0.0"
+/*Version shows the version of purplecat.*/
+const Version = "0.1.0"

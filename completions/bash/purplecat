@@ -1,0 +1,33 @@
+__purplecat() {
+    local cur prev words cwords split
+    _init_completion -s || return
+
+    case "${prev}" in
+        "--format" | "-f")
+            local formats="CSV JSON YAML XML Markdown"
+            COMPREPLY=($(compgen -W "${formats}" -- "${cur}"))
+            return 0
+            ;;
+        "--level" | "-l")
+            local levels="DEBUG INFO WARN FATAL"
+            COMPREPLY=($(compgen -W "${levels}" -- "${cur}"))
+            return 0
+            ;;
+        "--output" | "-o")
+            compopt -o filenames
+            COMPREPLY=($(compgen -f -- "${cur}"))
+            return 0
+            ;;
+    esac
+    local opts="-d -f -l -o -N -h --depth --format --level --output --offline --help"
+    if [[ "$cur" =~ ^\- ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+        return 0
+    else
+        compopt -o filenames
+        COMPREPLY=($(compgen -d -- "$cur"))
+    fi
+    return 0
+}
+
+complete -F __purplecat purplecat

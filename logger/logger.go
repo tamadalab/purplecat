@@ -2,112 +2,161 @@ package logger
 
 import "log"
 
+/*Level shows the level for logging.*/
 type Level int
 
 const (
+	/*DEBUG shows the debug level. */
 	DEBUG Level = iota + 1
+	/*INFO shows the info level. */
 	INFO
+	/*WARN shows the warn level. */
 	WARN
-	SEVERE
+	/*FATAL shows the fatal level. */
+	FATAL
 )
 
+func (level Level) String() string {
+	switch level {
+	case DEBUG:
+		return "DEBUG"
+	case INFO:
+		return "INFO"
+	case WARN:
+		return "WARN"
+	case FATAL:
+		return "FATAL"
+	default:
+		return "UNKNOWN"
+	}
+}
+
+/*Logger is a struct for logging the message. */
 type Logger struct {
-	OutputLevel Level
+	outputLevel Level
 }
 
-var DefaultLogger *Logger = &Logger{OutputLevel: WARN}
+var defaultLogger = New(WARN)
 
+/*GetLevel returns the log level of the default logger.*/
 func GetLevel() Level {
-	return DefaultLogger.GetLevel()
+	return defaultLogger.GetLevel()
 }
 
+/*SetLevel set the log level for the default logger.*/
 func SetLevel(Level Level) {
-	DefaultLogger.SetLevel(Level)
+	defaultLogger.SetLevel(Level)
 }
 
-func Info(message string) {
-	DefaultLogger.Info(message)
-}
-
+/*Debug prints the given message when the log level of the default logger is DEBUG.*/
 func Debug(message string) {
-	DefaultLogger.Debug(message)
+	defaultLogger.Debug(message)
 }
 
+/*Info prints the given message when the log level of the default logger is less than INFO.*/
+func Info(message string) {
+	defaultLogger.Info(message)
+}
+
+/*Warn prints the given message when the log level of the default logger is less than WARN.*/
 func Warn(message string) {
-	DefaultLogger.Warn(message)
+	defaultLogger.Warn(message)
 }
 
-func Severe(message string) {
-	DefaultLogger.Severe(message)
+/*Fatal prints the given message.*/
+func Fatal(message string) {
+	defaultLogger.Fatal(message)
 }
 
-func Infof(format string, v ...interface{}) {
-	DefaultLogger.Infof(format, v...)
-}
-
+/*Debugf prints the given message by Printf format when the log level of the default logger is DEBUG.*/
 func Debugf(format string, v ...interface{}) {
-	DefaultLogger.Debugf(format, v...)
+	defaultLogger.Debugf(format, v...)
 }
+
+/*Infof prints the given message by Printf format when the log level of the default logger is INFO.*/
+func Infof(format string, v ...interface{}) {
+	defaultLogger.Infof(format, v...)
+}
+
+/*Warnf prints the given message by Printf format when the log level of the default logger is WARN.*/
 func Warnf(format string, v ...interface{}) {
-	DefaultLogger.Warnf(format, v...)
+	defaultLogger.Warnf(format, v...)
 }
-func Severef(format string, v ...interface{}) {
-	DefaultLogger.Severef(format, v...)
+
+/*Fatalf prints the given message by Printf format.*/
+func Fatalf(format string, v ...interface{}) {
+	defaultLogger.Fatalf(format, v...)
 }
+
+/*New creates the new logger with given log level and returns it.*/
+func New(giveLevel Level) *Logger {
+	return &Logger{outputLevel: giveLevel}
+}
+
+/*Debug prints the given message when the log level of the receiver logger is DEBUG.*/
 func (logger *Logger) Debug(message string) {
-	if logger.OutputLevel <= DEBUG {
+	if logger.outputLevel <= DEBUG {
 		log.Println(message)
 	}
 }
 
+/*Info prints the given message when the log level of the receiver logger is INFO.*/
 func (logger *Logger) Info(message string) {
-	if logger.OutputLevel <= INFO {
+	if logger.outputLevel <= INFO {
 		log.Println(message)
 	}
 }
 
+/*Warn prints the given message when the log level of the receiver logger is WARN.*/
 func (logger *Logger) Warn(message string) {
-	if logger.OutputLevel <= WARN {
+	if logger.outputLevel <= WARN {
 		log.Println(message)
 	}
 }
 
-func (logger *Logger) Severe(message string) {
-	if logger.OutputLevel <= SEVERE {
+/*Fatal prints the given message when the log level of the receiver logger is FATAL.*/
+func (logger *Logger) Fatal(message string) {
+	if logger.outputLevel <= FATAL {
 		log.Println(message)
 	}
 }
 
+/*Debugf prints the given message by Printf format when the log level of the receiver logger is DEBUG.*/
 func (logger *Logger) Debugf(format string, v ...interface{}) {
-	if logger.OutputLevel <= DEBUG {
+	if logger.outputLevel <= DEBUG {
 		log.Printf(format, v...)
 	}
 }
 
+/*Infof prints the given message by Printf format when the log level of the receiver logger is INFO.*/
 func (logger *Logger) Infof(format string, v ...interface{}) {
-	if logger.OutputLevel <= INFO {
+	if logger.outputLevel <= INFO {
 		log.Printf(format, v...)
 	}
 }
 
+/*Warnf prints the given message by Printf format when the log level of the receiver logger is WARN.*/
 func (logger *Logger) Warnf(format string, v ...interface{}) {
-	if logger.OutputLevel <= WARN {
+	if logger.outputLevel <= WARN {
 		log.Printf(format, v...)
 	}
 }
 
-func (logger *Logger) Severef(format string, v ...interface{}) {
-	if logger.OutputLevel <= SEVERE {
+/*Fatalf prints the given message by Printf format.*/
+func (logger *Logger) Fatalf(format string, v ...interface{}) {
+	if logger.outputLevel <= FATAL {
 		log.Printf(format, v...)
 	}
 }
 
+/*GetLevel returns the log level of the receiver logger.*/
 func (logger *Logger) GetLevel() Level {
-	return logger.OutputLevel
+	return logger.outputLevel
 }
 
-func (logger *Logger) SetLevel(Level Level) {
-	if Level >= DEBUG && Level <= SEVERE {
-		logger.OutputLevel = Level
+/*SetLevel sets the log level by the given level for the receiver logger.*/
+func (logger *Logger) SetLevel(giveLevel Level) {
+	if giveLevel >= DEBUG && giveLevel <= FATAL {
+		logger.outputLevel = giveLevel
 	}
 }

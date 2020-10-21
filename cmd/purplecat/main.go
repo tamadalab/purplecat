@@ -42,23 +42,23 @@ OPTIONS
     -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
                               Available values are: CSV, JSON, YAML, XML, and Markdown.
     -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
-                              Available values are: DEBUG, INFO, WARN, SEVERE
+                              Available values are: DEBUG, INFO, WARN, and FATAL
     -o, --output <FILE>       specifies the destination file (default: STDOUT).
     -N, --offline             offline mode (no network access).
 
     -h, --help                prints this message.
 PROJECT
-	target project for extracting dependent libraries and their licenses.
+    target project for extracting dependent libraries and their licenses.
 BUILD_FILE
-	build file of the project for extracting dependent libraries and their licenses
+    build file of the project for extracting dependent libraries and their licenses
 
-purplecat support `, name, purplecat.VERSION, name)
-
+purplecat support the projects using the following build tools.
+    * Maven 3 (pom.xml)`, name, purplecat.Version, name)
 }
 
 func printError(err error, status int) int {
 	if err != nil {
-		logger.Severe(err.Error())
+		logger.Fatal(err.Error())
 		return status
 	}
 	return 0
@@ -85,27 +85,24 @@ func updateLogLevel(level string) {
 		logger.SetLevel(logger.INFO)
 	case "warn":
 		logger.SetLevel(logger.WARN)
-	case "severe":
-		logger.SetLevel(logger.SEVERE)
+	case "fatal":
+		logger.SetLevel(logger.FATAL)
 	}
 }
 
-func parseArgs(args []string) (*options, int, error) {
+func parseArgs(args []string) (*options, error) {
 	opts := &options{context: &purplecat.Context{}}
 	var logLevel string
 	flags := constructFlags(args, opts, &logLevel)
 	if err := flags.Parse(args); err != nil {
-		return opts, 1, err
+		return opts, err
 	}
 	updateLogLevel(logLevel)
 	opts.args = flags.Args()[1:]
-	if opts.isHelpFlag() {
-		return opts, 0, fmt.Errorf(helpMessage(args[0]))
-	}
-	return opts, 0, nil
+	return opts, nil
 }
 
-func performEach(projectPath string, context *purplecat.Context) (*purplecat.DependencyTree, error) {
+func performEach(projectPath string, context *purplecat.Context) (*purplecat.Project, error) {
 	parser, err := context.GenerateParser(projectPath)
 	if err != nil {
 		return nil, err
@@ -134,9 +131,13 @@ func perform(opts *options) int {
 }
 
 func goMain(args []string) int {
-	opts, status, err := parseArgs(args)
+	opts, err := parseArgs(args)
 	if err != nil {
-		return printError(err, status)
+		return printError(err, 1)
+	}
+	if opts.isHelpFlag() {
+		fmt.Println(helpMessage(args[0]))
+		return 0
 	}
 	return perform(opts)
 }
