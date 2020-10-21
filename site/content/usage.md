@@ -119,8 +119,8 @@ license-name: BSD
     * dependent-project2: ["BSD"]
 ```
 
-## :whale: Docker (not implement yet)
+## :whale: Docker
 
 ```sh
-$ docker run -v /target/project/dir:/home/projects tamadalab/purplecat
+$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat:latest pom.xml
 ```

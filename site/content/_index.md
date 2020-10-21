@@ -11,6 +11,7 @@ draft: false
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.1.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.1.0)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A2.0.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 # :cat: purplecat
 
