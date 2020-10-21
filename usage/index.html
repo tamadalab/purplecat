@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Hugo 0.69.0" />
+  <link rel="stylesheet" href="/purplecat/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  
+  
+  
+  <link rel="stylesheet" href="/purplecat/css/cayman.ea0e967413f3851071cc8ace3621bc4205fe8fa79b2abe3d7bf94ff2841f0d47.css">
+  <link rel="stylesheet" href="/purplecat/style.css">
+  
+  
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/harry.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/harry.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/harry.png">
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script>
+
+  <title>🏃‍♂️ Usage | purplecat</title>
+</head>
+
+<body>
+  <section class="page-header">
+  
+  <img src="/purplecat/images/purplecat_128.png" class="avatar" alt="project_logo">
+  
+  <h1 class="project-name">
+    purplecat
+  </h1>
+  <h2 class="project-tagline">
+    Purple cat, Purple cat, What do you see? I see the dependent libraries and their licenses!
+  </h2>
+  <nav>
+    
+    
+      
+      
+      
+      
+      <a href="/purplecat/" class="btn">🏠 Home</a>
+    
+      
+      
+      
+      
+      <a href="/purplecat/usage" class="btn">⚓ How to Use</a>
+    
+      
+      
+      
+      
+      <a href="/purplecat/about" class="btn">😄 About</a>
+    
+  </nav>
+</section>
+
+  <section class="main-content">
+    
+  <h1>🏃‍♂️ Usage</h1>
+  <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat -h
+purplecat version 0.1.0
+purplecat <span style="color:#666">[</span>OPTIONS<span style="color:#666">]</span> &lt;PROJECTs...|BUILD_FILEs...&gt;
+OPTIONS
+    -d, --depth &lt;DEPTH&gt;       specifies the depth <span style="color:#008000;font-weight:bold">for</span> parsing <span style="color:#666">(</span>default: 1<span style="color:#666">)</span>
+    -f, --format &lt;FORMAT&gt;     specifies the format of the result. Default is <span style="color:#ba2121">&#39;markdown&#39;</span>.
+                              Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --level &lt;LOGLEVEL&gt;    specifies the log level. <span style="color:#666">(</span>default: WARN<span style="color:#666">)</span>.
+                              Available values are: DEBUG, INFO, WARN, SEVERE
+    -o, --output &lt;FILE&gt;       specifies the destination file <span style="color:#666">(</span>default: STDOUT<span style="color:#666">)</span>.
+    -N, --offline             offline mode <span style="color:#666">(</span>no network access<span style="color:#666">)</span>.
+
+    -h, --help                prints this message.
+PROJECT
+    target project <span style="color:#008000;font-weight:bold">for</span> extracting dependent libraries and their licenses.
+BUILD_FILE
+    build file of the project <span style="color:#008000;font-weight:bold">for</span> extracting dependent libraries and their licenses
+
+purplecat support the projects using the following build tools.
+    * Maven <span style="color:#666">3</span> <span style="color:#666">(</span>pom.xml<span style="color:#666">)</span>
+</code></pre></div><h3 id="resultant-format">Resultant Format</h3>
+<h4 id="csv">CSV</h4>
+<pre><code class="language-csv" data-lang="csv">project-name,license-name,parent
+project1,[&quot;Apache 2.0&quot;],
+dependent-project1,[&quot;Apache 2.0&quot;],project1
+dependent-project2,[&quot;BSD&quot;],project1
+</code></pre><h4 id="json">Json</h4>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+    <span style="color:#008000;font-weight:bold">&#34;project-name&#34;</span>: <span style="color:#ba2121">&#34;project1&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;license-name&#34;</span>: <span style="color:#ba2121">&#34;Apache 2.0&#34;</span>,
+    <span style="color:#008000;font-weight:bold">&#34;dependencies&#34;</span>: [
+        {
+            <span style="color:#008000;font-weight:bold">&#34;project-name&#34;</span>: <span style="color:#ba2121">&#34;dependent-project1&#34;</span>,
+            <span style="color:#008000;font-weight:bold">&#34;license-name&#34;</span>: <span style="color:#ba2121">&#34;Apache 2.0&#34;</span>
+        }, {
+            <span style="color:#008000;font-weight:bold">&#34;project-name&#34;</span>: <span style="color:#ba2121">&#34;dependent-project2&#34;</span>,
+            <span style="color:#008000;font-weight:bold">&#34;license-name&#34;</span>: <span style="color:#ba2121">&#34;BSD&#34;</span>
+        }
+    ]
+}
+</code></pre></div><p>you can get formatted Json using <code>jq</code>, like the following the command.</p>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat .... | jq .
+</code></pre></div><h4 id="yaml">Yaml</h4>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>project1<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache<span style="color:#bbb"> </span><span style="color:#666">2.0</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">dependencies</span>:<span style="color:#bbb">
+</span><span style="color:#bbb"></span>- <span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>dependent-project1<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache<span style="color:#bbb"> </span><span style="color:#666">2.0</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span>- <span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>dependent-project2<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>BSD<span style="color:#bbb">
+</span></code></pre></div><h4 id="xml">Xml</h4>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#bc7a00">&lt;?xml version=&#34;1.0&#34;?&gt;</span>
+<span style="color:#008000;font-weight:bold">&lt;purplecat&gt;</span>
+  <span style="color:#008000;font-weight:bold">&lt;project-name&gt;</span>project1<span style="color:#008000;font-weight:bold">&lt;/project-name&gt;</span>
+  <span style="color:#008000;font-weight:bold">&lt;license-names&gt;</span>
+    <span style="color:#008000;font-weight:bold">&lt;license-name&gt;</span>Apache 2.0<span style="color:#008000;font-weight:bold">&lt;/license-name&gt;</span>
+  <span style="color:#008000;font-weight:bold">&lt;/license-names&gt;</span>
+  <span style="color:#008000;font-weight:bold">&lt;dependencies&gt;</span>
+    <span style="color:#008000;font-weight:bold">&lt;dependency&gt;</span>
+      <span style="color:#008000;font-weight:bold">&lt;project-name&gt;</span>dependent-project1<span style="color:#008000;font-weight:bold">&lt;/project-name&gt;</span>
+      <span style="color:#008000;font-weight:bold">&lt;license-names&gt;</span>
+        <span style="color:#008000;font-weight:bold">&lt;license-name&gt;</span>Apache 2.0<span style="color:#008000;font-weight:bold">&lt;/license-name&gt;</span>
+      <span style="color:#008000;font-weight:bold">&lt;/license-names&gt;</span>
+    <span style="color:#008000;font-weight:bold">&lt;/dependency&gt;</span>
+    <span style="color:#008000;font-weight:bold">&lt;dependency&gt;</span>
+      <span style="color:#008000;font-weight:bold">&lt;project-name&gt;</span>dependent-project2<span style="color:#008000;font-weight:bold">&lt;/project-name&gt;</span>
+      <span style="color:#008000;font-weight:bold">&lt;license-names&gt;</span>
+        <span style="color:#008000;font-weight:bold">&lt;license-name&gt;</span>BSD<span style="color:#008000;font-weight:bold">&lt;/license-name&gt;</span>
+      <span style="color:#008000;font-weight:bold">&lt;/license-names&gt;</span>
+    <span style="color:#008000;font-weight:bold">&lt;/dependency&gt;</span>
+  <span style="color:#008000;font-weight:bold">&lt;/dependencies&gt;</span>
+<span style="color:#008000;font-weight:bold">&lt;/purplecat&gt;</span>
+</code></pre></div><h4 id="toml-not-implemented-yet">Toml (not implemented yet)</h4>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-toml" data-lang="toml">project<span style="">-</span>name = <span style="color:#ba2121">&#34;project1&#34;</span>
+license<span style="">-</span>name = <span style="color:#ba2121">&#34;Apache 2.0&#34;</span>
+[[dependencies]]
+project<span style="">-</span>name<span style="">:</span> dependent<span style="">-</span>project1
+license<span style="">-</span>name<span style="">:</span> Apache <span style="color:#666">2.0</span>
+[[dependencies]]
+project<span style="">-</span>name<span style="">:</span> dependent<span style="">-</span>project2
+license<span style="">-</span>name<span style="">:</span> BSD
+</code></pre></div><h4 id="markdown">Markdown</h4>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-markdown" data-lang="markdown"><span style="color:#008000;font-weight:bold">*</span> project1: Apache 2.0
+    <span style="color:#008000;font-weight:bold">*</span> dependent-project1: [&#34;Apache 2.0&#34;]
+    <span style="color:#008000;font-weight:bold">*</span> dependent-project2: [&#34;BSD&#34;]
+</code></pre></div><h2 id="-docker-not-implement-yet">🐳 Docker (not implement yet)</h2>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/projects tamadalab/purplecat
+</code></pre></div>
+
+    <footer class="site-footer">
+  <span class="site-footer-credits">
+    <a href="https://github.com/tamadalab/purplecat"><img src="https://img.shields.io/badge/GitHub-tamadalab/purplecat-blueviolet.svg?logo=github" alt="GitHub"></a> Made with <a href="https://gohugo.io/">Hugo</a>. Theme by <a href="https://github.com/zwbetz-gh/cayman-hugo-theme">Cayman</a>. Deployed to <a href="https://pages.github.com/">GitHub Pages</a>.
+  </span>
+</footer>
+
+  </section>
+  
+  
+
+</body>
+</html>

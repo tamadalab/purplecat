@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>:house: Home on purplecat</title>
+    <link>https://tamadalab.github.io/purplecat/</link>
+    <description>Recent content in :house: Home on purplecat</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 12 Oct 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://tamadalab.github.io/purplecat/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>:runner: Usage</title>
+      <link>https://tamadalab.github.io/purplecat/usage/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://tamadalab.github.io/purplecat/usage/</guid>
+      <description>$ purplecat -h purplecat version 0.1.0 purplecat [OPTIONS] &amp;lt;PROJECTs...|BUILD_FILEs...&amp;gt; OPTIONS -d, --depth &amp;lt;DEPTH&amp;gt; specifies the depth for parsing (default: 1) -f, --format &amp;lt;FORMAT&amp;gt; specifies the format of the result. Default is &amp;#39;markdown&amp;#39;. Available values are: CSV, JSON, YAML, XML, and Markdown. -l, --level &amp;lt;LOGLEVEL&amp;gt; specifies the log level. (default: WARN). Available values are: DEBUG, INFO, WARN, SEVERE -o, --output &amp;lt;FILE&amp;gt; specifies the destination file (default: STDOUT). -N, --offline offline mode (no network access).</description>
+    </item>
+    
+    <item>
+      <title>:smile: About</title>
+      <link>https://tamadalab.github.io/purplecat/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://tamadalab.github.io/purplecat/about/</guid>
+      <description>📜 License 
+This license permits
+ 👍 Commercial use, 👍 Modification, 👍 Distribution, and 👍 Private use.  🎃 Logo This image comes from https://pixy.org/4693873/ (CC-0).
+📛 Project name come from? The project name come from the children book, titled &amp;ldquo;Brown Bear, Brown Bear, What do you see?&amp;rdquo; by Bill Martin, Jr. and Eric Carle.
+I read the book to my child many times by her request. The purple cat is the most favorit character of her.</description>
+    </item>
+    
+  </channel>
+</rss>
