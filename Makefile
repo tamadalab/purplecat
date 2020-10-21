@@ -34,7 +34,8 @@ build:
 define _createDist
 	mkdir -p dist/$(1)_$(2)/$(DIST)
 	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/purplecat$(3) cmd/purplecat/main.go
-	cp -r README.md LICENSE dist/$(1)_$(2)/$(DIST)
+	cp -r README.md LICENSE completions dist/$(1)_$(2)/$(DIST)
+	cp -r site/public dist/$(1)_$(2)/$(DIST)/docs
 	tar cfz dist/$(DIST)_$(1)_$(2).tar.gz -C dist/$(1)_$(2) $(DIST)
 endef
 

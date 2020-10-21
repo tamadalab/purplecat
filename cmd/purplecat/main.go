@@ -42,7 +42,7 @@ OPTIONS
     -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
                               Available values are: CSV, JSON, YAML, XML, and Markdown.
     -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
-                              Available values are: DEBUG, INFO, WARN, SEVERE
+                              Available values are: DEBUG, INFO, WARN, and FATAL
     -o, --output <FILE>       specifies the destination file (default: STDOUT).
     -N, --offline             offline mode (no network access).
 
@@ -58,7 +58,7 @@ purplecat support the projects using the following build tools.
 
 func printError(err error, status int) int {
 	if err != nil {
-		logger.Severe(err.Error())
+		logger.Fatal(err.Error())
 		return status
 	}
 	return 0
@@ -85,8 +85,8 @@ func updateLogLevel(level string) {
 		logger.SetLevel(logger.INFO)
 	case "warn":
 		logger.SetLevel(logger.WARN)
-	case "severe":
-		logger.SetLevel(logger.SEVERE)
+	case "fatal":
+		logger.SetLevel(logger.FATAL)
 	}
 }
 
