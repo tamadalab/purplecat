@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="generator" content="Hugo 0.69.0" />
+  <meta name="generator" content="Hugo 0.76.2" />
   <link rel="stylesheet" href="/purplecat/css/normalize.css">
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   
@@ -107,10 +107,10 @@ dependent-project2,[&quot;BSD&quot;],project1
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat .... | jq .
 </code></pre></div><h4 id="yaml">Yaml</h4>
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>project1<span style="color:#bbb">
-</span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache<span style="color:#bbb"> </span><span style="color:#666">2.0</span><span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache 2.0<span style="color:#bbb">
 </span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">dependencies</span>:<span style="color:#bbb">
 </span><span style="color:#bbb"></span>- <span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>dependent-project1<span style="color:#bbb">
-</span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache<span style="color:#bbb"> </span><span style="color:#666">2.0</span><span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache 2.0<span style="color:#bbb">
 </span><span style="color:#bbb"></span>- <span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>dependent-project2<span style="color:#bbb">
 </span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>BSD<span style="color:#bbb">
 </span></code></pre></div><h4 id="xml">Xml</h4>
@@ -148,8 +148,8 @@ license<span style="">-</span>name<span style="">:</span> BSD
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-markdown" data-lang="markdown"><span style="color:#008000;font-weight:bold">*</span> project1: Apache 2.0
     <span style="color:#008000;font-weight:bold">*</span> dependent-project1: [&#34;Apache 2.0&#34;]
     <span style="color:#008000;font-weight:bold">*</span> dependent-project2: [&#34;BSD&#34;]
-</code></pre></div><h2 id="-docker-not-implement-yet">🐳 Docker (not implement yet)</h2>
-<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/projects tamadalab/purplecat
+</code></pre></div><h2 id="-docker">🐳 Docker</h2>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat:latest pom.xml
 </code></pre></div>
 
     <footer class="site-footer">
