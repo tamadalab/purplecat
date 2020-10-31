@@ -5,6 +5,7 @@
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.1.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.1.0)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 # :cat: purplecat
 
@@ -133,10 +134,15 @@ license-name: BSD
     * dependent-project2: ["BSD"]
 ```
 
-## :whale: Docker (not implement yet)
+## :whale: Docker
+
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
+
+* `tamadalab/purplecat`
+    * `1.0.0`, `latest`
 
 ```sh
-$ docker run -v /target/project/dir:/home/projects tamadalab/purplecat
+$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml
 ```
 
 ## :anchor: Install

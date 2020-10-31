@@ -32,8 +32,8 @@ build:
 	$(GO) build -o purplecat -v cmd/purplecat/main.go
 
 define _createDist
-	mkdir -p dist/$(1)_$(2)/$(DIST)
-	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/purplecat$(3) cmd/purplecat/main.go
+	mkdir -p dist/$(1)_$(2)/$(DIST)/bin
+	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/bin/purplecat$(3) cmd/purplecat/main.go
 	cp -r README.md LICENSE completions dist/$(1)_$(2)/$(DIST)
 	cp -r site/public dist/$(1)_$(2)/$(DIST)/docs
 	tar cfz dist/$(DIST)_$(1)_$(2).tar.gz -C dist/$(1)_$(2) $(DIST)
