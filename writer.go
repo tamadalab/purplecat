@@ -35,11 +35,7 @@ func (mw *markdownWriter) Write(tree Project) error {
 }
 
 func (mw *markdownWriter) writeImpl(tree Project, indent string) error {
-	licenses := []string{}
-	for _, name := range tree.Licenses() {
-		licenses = append(licenses, fmt.Sprintf(`"%s"`, name.Name))
-	}
-	line := fmt.Sprintf("%s* %s: [%s]\n", indent, tree.Name(), strings.Join(licenses, ","))
+	line := fmt.Sprintf("%s* %s: [%s]\n", indent, tree.Name(), joinLicenseNames(tree))
 	mw.Out.Write([]byte(line))
 	for _, dependency := range tree.Dependencies() {
 		if dependency != nil {
@@ -56,11 +52,7 @@ func (cw *csvWriter) Write(tree Project) error {
 }
 
 func (cw *csvWriter) writeImpl(tree Project, parent string) {
-	array := []string{}
-	for _, name := range tree.Licenses() {
-		array = append(array, fmt.Sprintf(`"%s"`, name.Name))
-	}
-	line := fmt.Sprintf("%s,%s,%s\n", tree.Name(), array, parent)
+	line := fmt.Sprintf("%s,%s,%s\n", tree.Name(), joinLicenseNames(tree), parent)
 	cw.Out.Write([]byte(line))
 	for _, dep := range tree.Dependencies() {
 		if dep != nil {
