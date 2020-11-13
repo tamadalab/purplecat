@@ -12,10 +12,13 @@ import (
 )
 
 type options struct {
-	dest     string
-	context  *purplecat.Context
-	helpFlag bool
-	args     []string
+	dest      string
+	cachePath string
+	cacheType string
+	logLevel  string
+	context   *purplecat.Context
+	helpFlag  bool
+	args      []string
 }
 
 func (opts *options) destination() (*os.File, error) {
@@ -38,15 +41,19 @@ func helpMessage(progName string) string {
 	return fmt.Sprintf(`%s version %s
 %s [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -d, --depth <DEPTH>       specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
-                              Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
-                              Available values are: DEBUG, INFO, WARN, and FATAL
-    -o, --output <FILE>       specifies the destination file (default: STDOUT).
-    -N, --offline             offline mode (no network access).
+    -c, --cache-type <TYPE>        specifies the cache type. (default: default).
+                                   Available values are: default, ref-only, and never.
+        --cachedb-path <DBPATH>    specifies the cache database path
+                                   (default: ~/.config/purplecat/cachedb.json). 
+    -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>          specifies the result format. Default is 'markdown'.
+                                   Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --log-level <LOGLEVEL>     specifies the log level. (default: WARN).
+                                   Available values are: DEBUG, INFO, WARN, and FATAL
+    -o, --output <FILE>            specifies the destination file (default: STDOUT).
+    -N, --offline                  offline mode (no network access).
 
-    -h, --help                prints this message.
+    -h, --help                     prints this message.
 PROJECT
     target project for extracting dependent libraries and their licenses.
 BUILD_FILE
@@ -64,12 +71,14 @@ func printError(err error, status int) int {
 	return 0
 }
 
-func constructFlags(args []string, opts *options, logLevel *string) *flag.FlagSet {
+func constructFlags(args []string, opts *options) *flag.FlagSet {
 	flags := flag.NewFlagSet("purplecat", flag.ContinueOnError)
 	flags.Usage = func() { fmt.Println(helpMessage(args[0])) }
 	flags.BoolVarP(&opts.context.DenyNetworkAccess, "offline", "N", false, "offline mode (no network access)")
 	flags.BoolVarP(&opts.helpFlag, "help", "h", false, "print this message")
-	flags.StringVarP(logLevel, "level", "l", "WARN", "specifies the log level")
+	flags.StringVarP(&opts.cacheType, "cache-type", "c", "default", "specifies the cache type")
+	flags.StringVarP(&opts.cachePath, "cachedb-path", "", "${HOME}/.config/purplecat/cachedb.json", "specifies the cache database path.")
+	flags.StringVarP(&opts.logLevel, "log-level", "l", "WARN", "specifies the log level")
 	flags.IntVarP(&opts.context.Depth, "depth", "d", 1, "specifies the depth for parsing")
 	flags.StringVarP(&opts.dest, "output", "o", "", "specifies the destination file (default: STDOUT)")
 	flags.StringVarP(&opts.context.Format, "format", "f", "markdown", "specifies the result format (default: markdown).")
@@ -90,19 +99,61 @@ func updateLogLevel(level string) {
 	}
 }
 
+func validateCacheType(opts *options) error {
+	return generalValidator([]string{"default", "ref-only", "never"}, opts.cacheType, "%s: unknown cache type")
+}
+
+func validateCachePath(opts *options) error {
+	return nil
+}
+
+func validateFormat(opts *options) error {
+	return generalValidator([]string{"csv", "json", "markdown", "yaml", "xml"}, opts.context.Format, "%s: unknown format")
+}
+func validateLogLevel(opts *options) error {
+	return generalValidator([]string{"debug", "info", "warn", "fatal"}, opts.logLevel, "%s: unknown log level")
+}
+
+func generalValidator(available []string, value, message string) error {
+	lower := strings.ToLower(value)
+	for _, value := range available {
+		if value == lower {
+			return nil
+		}
+	}
+	return fmt.Errorf(message, value)
+}
+
+func validate(opts *options) error {
+	validators := [](func(opts *options) error){
+		validateCacheType,
+		validateCachePath,
+		validateFormat,
+		validateLogLevel,
+	}
+	for _, validator := range validators {
+		if err := validator(opts); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func parseArgs(args []string) (*options, error) {
 	opts := &options{context: &purplecat.Context{}}
-	var logLevel string
-	flags := constructFlags(args, opts, &logLevel)
+	flags := constructFlags(args, opts)
 	if err := flags.Parse(args); err != nil {
 		return opts, err
 	}
-	updateLogLevel(logLevel)
+	if err := validate(opts); err != nil {
+		return opts, err
+	}
+	updateLogLevel(opts.logLevel)
 	opts.args = flags.Args()[1:]
 	return opts, nil
 }
 
-func performEach(projectPath string, context *purplecat.Context) (*purplecat.Project, error) {
+func performEach(projectPath string, context *purplecat.Context) (purplecat.Project, error) {
 	parser, err := context.GenerateParser(projectPath)
 	if err != nil {
 		return nil, err

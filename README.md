@@ -22,15 +22,17 @@ $ purplecat -h
 purplecat version 0.1.0
 purplecat [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -d, --depth <DEPTH>       specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
-                              Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
-                              Available values are: DEBUG, INFO, WARN, SEVERE
-    -o, --output <FILE>       specifies the destination file (default: STDOUT).
-    -N, --offline             offline mode (no network access).
+    -c, --cachedb-path <DBPATH>    specifies cache database path.
+    -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>          specifies the format of the result. Default is 'markdown'.
+                                   Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --level <LOGLEVEL>         specifies the log level. (default: WARN).
+                                   Available values are: DEBUG, INFO, WARN, SEVERE
+        --no-cache                 No cache mode.
+    -o, --output <FILE>            specifies the destination file (default: STDOUT).
+    -N, --offline                  offline mode (no network access).
 
-    -h, --help                prints this message.
+    -h, --help                    prints this message.
 PROJECT
     target project for extracting dependent libraries and their licenses.
 BUILD_FILE
