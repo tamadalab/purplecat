@@ -60,8 +60,6 @@ func (artifact *artifact) isValid() bool {
 	return artifact.groupID != "" && artifact.artifactID != "" && artifact.version != ""
 }
 
-var cache = map[string]Project{}
-
 type mavenParser struct {
 	context *Context
 }
@@ -121,9 +119,11 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (Project, error
 	// return constructDependencyTree(root, pomPath.Dir(), context, currentDepth)
 }
 
-func hitCache(artifact *artifact) (Project, bool) {
-	dep, ok := cache[artifact.Name()]
-	return dep, ok
+func hitCache(artifact *artifact, context *Context) (Project, bool) {
+	if licenses, ok := context.SearchCache(artifact.Name()); ok {
+		return &localProject{info: artifact, licenses: licenses}, true
+	}
+	return nil, false
 }
 
 func findParentLicense(parent *artifact, context *Context, currentDepth int) []*License {
@@ -149,7 +149,7 @@ func readProperties(node *xmlquery.Node, artifact *artifact) {
 
 func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, currentDepth int) (Project, error) {
 	projectArtifact := parseProjectInfo(root)
-	if dep, ok := hitCache(projectArtifact); ok {
+	if dep, ok := hitCache(projectArtifact, context); ok {
 		return dep, nil
 	}
 	readProperties(root, projectArtifact)
@@ -158,7 +158,7 @@ func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, 
 		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
 	}
 	project := &localProject{info: projectArtifact, licenses: licenses}
-	cache[projectArtifact.Name()] = project
+	context.RegisterCache(projectArtifact.Name(), licenses)
 	return parseDependency(projectArtifact, project, root, context, currentDepth)
 }
 

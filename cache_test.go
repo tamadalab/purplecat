@@ -41,7 +41,7 @@ func TestNoCacheDB(t *testing.T) {
 		t.Errorf("FindError")
 	}
 	ok := db.Register("github.com/tamadalab/purplecat@v0.1.0", []*License{LicenseWTFPL})
-	if ok {
+	if !ok {
 		t.Errorf("Register error")
 	}
 	_, found = db.Find("github.com/tamadalab/purplecat@v0.1.0")
@@ -49,7 +49,7 @@ func TestNoCacheDB(t *testing.T) {
 		t.Errorf("FindError2")
 	}
 	_, success := db.Delete("github.com/tamadalab/purplecat@v0.1.0")
-	if success {
+	if !success {
 		t.Errorf("delete success!?")
 	}
 	if err := db.Store(); err == nil {
@@ -71,7 +71,7 @@ func TestRefOnlyCacheDB(t *testing.T) {
 		t.Errorf("db.Find(%s) did not match, wont %v", key, true)
 	}
 	ok := db.Register(key, []*License{License0BSD})
-	if ok {
+	if !ok {
 		t.Errorf("db.Register(%s) did not match, wont %v", key, false)
 	}
 	_, found = db.Find(key)
