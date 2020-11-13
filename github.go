@@ -73,8 +73,12 @@ func fetchLicensesByGitHubAPI(repo *GitHubProject) (*License, error) {
 	if err != nil {
 		return nil, err
 	}
+	return parseResponse(response, repo.Name())
+}
+
+func parseResponse(response *resty.Response, name string) (*License, error) {
 	if response.StatusCode() == 404 {
-		return nil, fmt.Errorf("%s: repository not found", repo.Name())
+		return nil, fmt.Errorf("%s: repository not found", name)
 	}
 	json := response.Result().(*githubAPIResponse)
 	if json.License == nil {
