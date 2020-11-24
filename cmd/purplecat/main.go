@@ -77,7 +77,7 @@ func constructFlags(args []string, opts *options) *flag.FlagSet {
 	flags.BoolVarP(&opts.context.DenyNetworkAccess, "offline", "N", false, "offline mode (no network access)")
 	flags.BoolVarP(&opts.helpFlag, "help", "h", false, "print this message")
 	flags.StringVarP(&opts.cacheType, "cache-type", "c", "default", "specifies the cache type")
-	flags.StringVarP(&opts.cachePath, "cachedb-path", "", "${HOME}/.config/purplecat/cachedb.json", "specifies the cache database path.")
+	flags.StringVarP(&opts.cachePath, "cachedb-path", "", purplecat.DefaultCacheDBPath(), "specifies the cache database path.")
 	flags.StringVarP(&opts.logLevel, "log-level", "l", "WARN", "specifies the log level")
 	flags.IntVarP(&opts.context.Depth, "depth", "d", 1, "specifies the depth for parsing")
 	flags.StringVarP(&opts.dest, "output", "o", "", "specifies the destination file (default: STDOUT)")
@@ -104,7 +104,11 @@ func validateCacheType(opts *options) error {
 }
 
 func validateCachePath(opts *options) error {
-	return nil
+	stat, err := os.Stat(opts.cachePath)
+	if err != nil || stat.Mode().IsRegular() {
+		return nil
+	}
+	return fmt.Errorf("%s: not regular file", opts.cachePath)
 }
 
 func validateFormat(opts *options) error {

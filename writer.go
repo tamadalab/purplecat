@@ -95,24 +95,30 @@ func joinLicenseNames(tree *Project) string {
 
 func (yw *yamlWriter) Write(tree *Project) error {
 	yw.Out.Write([]byte("---\n"))
-	yw.Out.Write([]byte(yw.string(tree, "", "", "")))
+	yw.Out.Write([]byte(yw.string(tree, []string{"", "", ""})))
 	yw.Out.Write([]byte("\n"))
 	return nil
 }
 
-func (yw *yamlWriter) string(tree *Project, indent, header1, header2 string) string {
-	base := fmt.Sprintf(`%s%sproject-name:%s
-%s%slicense-names:[%s]`, indent, header1, tree.Name(), indent, header2, joinLicenseNames(tree))
+func (yw *yamlWriter) deps2string(tree *Project, indents []string) []string {
 	array := []string{}
 	for _, dep := range tree.Dependencies() {
 		if dep != nil {
-			array = append(array, yw.string(dep, indent+"  ", "- ", "  "))
+			newIndents := []string{indents[0] + "  ", indents[1], indents[2]}
+			array = append(array, yw.string(dep, newIndents))
 		}
 	}
+	return array
+}
+
+func (yw *yamlWriter) string(tree *Project, indents []string) string {
+	base := fmt.Sprintf(`%s%sproject-name:%s
+%s%slicense-names:[%s]`, indents[0], indents[1], tree.Name(), indents[0], indents[2], joinLicenseNames(tree))
+	array := yw.deps2string(tree, indents)
 	if len(array) > 0 {
 		base = fmt.Sprintf(`%s
 %s%sdependencies:
-%s`, base, indent, header2, strings.Join(array, "\n"))
+%s`, base, indents[0], indents[2], strings.Join(array, "\n"))
 	}
 	return base
 }

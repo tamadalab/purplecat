@@ -56,8 +56,8 @@ const (
 	DefaultCache
 )
 
-// DefaultCacheDBPath represents the default cache database path.
-const DefaultCacheDBPath = "${HOME}/.config/purplecat/cachedb.json"
+// defaultCacheDBPath represents the default cache database path.
+const defaultCacheDBPath = "${HOME}/.config/purplecat/cachedb.json"
 
 // CacheDBEnvName is the environment name for the cache database path.
 const CacheDBEnvName = "PURPLECAT_CACHE_DB_PATH"
@@ -72,10 +72,15 @@ type CacheContext struct {
 func findCacheDBPath() string {
 	path := os.Getenv(CacheDBEnvName)
 	if path == "" {
-		path = DefaultCacheDBPath
+		path = defaultCacheDBPath
 	}
 	logger.Debugf("findCacheDBPath: %s", path)
 	return path
+}
+
+// DefaultCacheDBPath returns the path of the default cache database.
+func DefaultCacheDBPath() string {
+	return normalizeCachePath(defaultCacheDBPath)
 }
 
 func normalizeCachePath(fromPath string) string {
