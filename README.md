@@ -5,7 +5,7 @@
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.2.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.2.0)
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.2.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 # :cat: purplecat
 
@@ -19,28 +19,29 @@ For this, `purplecat` finds the dependent libraries and their licenses.
 
 ```sh
 $ purplecat -h
-purplecat version 0.1.0
+purplecat version 0.2.0
 purplecat [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -c, --cachedb-path <DBPATH>    specifies cache database path.
+    -c, --cache-type <TYPE>        specifies the cache type. (default: default).
+                                   Available values are: default, ref-only, newdb and memory.
+        --cachedb-path <DBPATH>    specifies the cache database path
+                                   (default: ~/.config/purplecat/cachedb.json). 
     -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>          specifies the format of the result. Default is 'markdown'.
+    -f, --format <FORMAT>          specifies the result format. Default is 'markdown'.
                                    Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --level <LOGLEVEL>         specifies the log level. (default: WARN).
-                                   Available values are: DEBUG, INFO, WARN, SEVERE
-        --no-cache                 No cache mode.
+    -l, --log-level <LOGLEVEL>     specifies the log level. (default: WARN).
+                                   Available values are: DEBUG, INFO, WARN, and FATAL
     -o, --output <FILE>            specifies the destination file (default: STDOUT).
     -N, --offline                  offline mode (no network access).
 
-    -h, --help                    prints this message.
+    -h, --help                     prints this message.
 PROJECT
     target project for extracting dependent libraries and their licenses.
 BUILD_FILE
     build file of the project for extracting dependent libraries and their licenses
 
 purplecat support the projects using the following build tools.
-    * Maven 3 (pom.xml)
-```
+    * Maven 3 (pom.xml)```
 
 ### Resultant Format
 
@@ -141,7 +142,8 @@ license-name: BSD
 [![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 * `tamadalab/purplecat`
-    * `1.0.0`, `latest`
+    * `0.2.0`, `latest`
+    * `0.1.0`
 
 ```sh
 $ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml
