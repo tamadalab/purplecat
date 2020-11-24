@@ -6,14 +6,18 @@
     <description>Recent content in :house: Home on purplecat</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 12 Oct 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://tamadalab.github.io/purplecat/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 12 Oct 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="https://tamadalab.github.io/purplecat/index.xml" rel="self" type="application/rss+xml" />
+    
+    
     <item>
       <title>:runner: Usage</title>
       <link>https://tamadalab.github.io/purplecat/usage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://tamadalab.github.io/purplecat/usage/</guid>
-      <description>$ purplecat -h purplecat version 0.1.0 purplecat [OPTIONS] &amp;lt;PROJECTs...|BUILD_FILEs...&amp;gt; OPTIONS -d, --depth &amp;lt;DEPTH&amp;gt; specifies the depth for parsing (default: 1) -f, --format &amp;lt;FORMAT&amp;gt; specifies the format of the result. Default is &amp;#39;markdown&amp;#39;. Available values are: CSV, JSON, YAML, XML, and Markdown. -l, --level &amp;lt;LOGLEVEL&amp;gt; specifies the log level. (default: WARN). Available values are: DEBUG, INFO, WARN, SEVERE -o, --output &amp;lt;FILE&amp;gt; specifies the destination file (default: STDOUT). -N, --offline offline mode (no network access).</description>
+      <description>$ purplecat -h purplecat version 0.2.0 purplecat [OPTIONS] &amp;lt;PROJECTs...|BUILD_FILEs...&amp;gt; OPTIONS -c, --cache-type &amp;lt;TYPE&amp;gt; specifies the cache type. (default: default). Available values are: default, ref-only, newdb and memory. --cachedb-path &amp;lt;DBPATH&amp;gt; specifies the cache database path (default: ~/.config/purplecat/cachedb.json). -d, --depth &amp;lt;DEPTH&amp;gt; specifies the depth for parsing (default: 1) -f, --format &amp;lt;FORMAT&amp;gt; specifies the result format. Default is &amp;#39;markdown&amp;#39;. Available values are: CSV, JSON, YAML, XML, and Markdown. -l, --log-level &amp;lt;LOGLEVEL&amp;gt; specifies the log level.</description>
     </item>
     
     <item>

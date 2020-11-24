@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="generator" content="Hugo 0.76.2" />
+  <meta name="generator" content="Hugo 0.69.0" />
   <link rel="stylesheet" href="/purplecat/css/normalize.css">
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   
@@ -64,18 +64,22 @@
     
   <h1>🏃‍♂️ Usage</h1>
   <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat -h
-purplecat version 0.1.0
+purplecat version 0.2.0
 purplecat <span style="color:#666">[</span>OPTIONS<span style="color:#666">]</span> &lt;PROJECTs...|BUILD_FILEs...&gt;
 OPTIONS
-    -d, --depth &lt;DEPTH&gt;       specifies the depth <span style="color:#008000;font-weight:bold">for</span> parsing <span style="color:#666">(</span>default: 1<span style="color:#666">)</span>
-    -f, --format &lt;FORMAT&gt;     specifies the format of the result. Default is <span style="color:#ba2121">&#39;markdown&#39;</span>.
-                              Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --level &lt;LOGLEVEL&gt;    specifies the log level. <span style="color:#666">(</span>default: WARN<span style="color:#666">)</span>.
-                              Available values are: DEBUG, INFO, WARN, SEVERE
-    -o, --output &lt;FILE&gt;       specifies the destination file <span style="color:#666">(</span>default: STDOUT<span style="color:#666">)</span>.
-    -N, --offline             offline mode <span style="color:#666">(</span>no network access<span style="color:#666">)</span>.
+    -c, --cache-type &lt;TYPE&gt;        specifies the cache type. <span style="color:#666">(</span>default: default<span style="color:#666">)</span>.
+                                   Available values are: default, ref-only, newdb and memory.
+        --cachedb-path &lt;DBPATH&gt;    specifies the cache database path
+                                   <span style="color:#666">(</span>default: ~/.config/purplecat/cachedb.json<span style="color:#666">)</span>. 
+    -d, --depth &lt;DEPTH&gt;            specifies the depth <span style="color:#008000;font-weight:bold">for</span> parsing <span style="color:#666">(</span>default: 1<span style="color:#666">)</span>
+    -f, --format &lt;FORMAT&gt;          specifies the result format. Default is <span style="color:#ba2121">&#39;markdown&#39;</span>.
+                                   Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --log-level &lt;LOGLEVEL&gt;     specifies the log level. <span style="color:#666">(</span>default: WARN<span style="color:#666">)</span>.
+                                   Available values are: DEBUG, INFO, WARN, and FATAL
+    -o, --output &lt;FILE&gt;            specifies the destination file <span style="color:#666">(</span>default: STDOUT<span style="color:#666">)</span>.
+    -N, --offline                  offline mode <span style="color:#666">(</span>no network access<span style="color:#666">)</span>.
 
-    -h, --help                prints this message.
+    -h, --help                     prints this message.
 PROJECT
     target project <span style="color:#008000;font-weight:bold">for</span> extracting dependent libraries and their licenses.
 BUILD_FILE
@@ -107,10 +111,10 @@ dependent-project2,[&quot;BSD&quot;],project1
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat .... | jq .
 </code></pre></div><h4 id="yaml">Yaml</h4>
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-yaml" data-lang="yaml"><span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>project1<span style="color:#bbb">
-</span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache 2.0<span style="color:#bbb">
+</span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache<span style="color:#bbb"> </span><span style="color:#666">2.0</span><span style="color:#bbb">
 </span><span style="color:#bbb"></span><span style="color:#008000;font-weight:bold">dependencies</span>:<span style="color:#bbb">
 </span><span style="color:#bbb"></span>- <span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>dependent-project1<span style="color:#bbb">
-</span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache 2.0<span style="color:#bbb">
+</span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>Apache<span style="color:#bbb"> </span><span style="color:#666">2.0</span><span style="color:#bbb">
 </span><span style="color:#bbb"></span>- <span style="color:#008000;font-weight:bold">project-name</span>:<span style="color:#bbb"> </span>dependent-project2<span style="color:#bbb">
 </span><span style="color:#bbb">  </span><span style="color:#008000;font-weight:bold">license-name</span>:<span style="color:#bbb"> </span>BSD<span style="color:#bbb">
 </span></code></pre></div><h4 id="xml">Xml</h4>
@@ -149,6 +153,15 @@ license<span style="">-</span>name<span style="">:</span> BSD
     <span style="color:#008000;font-weight:bold">*</span> dependent-project1: [&#34;Apache 2.0&#34;]
     <span style="color:#008000;font-weight:bold">*</span> dependent-project2: [&#34;BSD&#34;]
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
+<p><a href="https://hub.docker.com/r/tamadalab/purplecat"><img src="https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&amp;style=social" alt="Docker"></a></p>
+<ul>
+<li><code>tamadalab/purplecat</code>
+<ul>
+<li><code>0.2.0</code>, <code>latest</code></li>
+<li><code>0.1.0</code></li>
+</ul>
+</li>
+</ul>
 <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat:latest pom.xml
 </code></pre></div>
 
