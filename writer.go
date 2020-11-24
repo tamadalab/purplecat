@@ -8,7 +8,7 @@ import (
 
 // Writer writes given Project to given io.Writer by some format.
 type Writer interface {
-	Write(tree Project) error
+	Write(tree *Project) error
 }
 
 type markdownWriter struct {
@@ -30,11 +30,11 @@ type xmlWriter struct {
 	Out io.Writer
 }
 
-func (mw *markdownWriter) Write(tree Project) error {
+func (mw *markdownWriter) Write(tree *Project) error {
 	return mw.writeImpl(tree, "")
 }
 
-func (mw *markdownWriter) writeImpl(tree Project, indent string) error {
+func (mw *markdownWriter) writeImpl(tree *Project, indent string) error {
 	line := fmt.Sprintf("%s* %s: [%s]\n", indent, tree.Name(), joinLicenseNames(tree))
 	mw.Out.Write([]byte(line))
 	for _, dependency := range tree.Dependencies() {
@@ -45,13 +45,13 @@ func (mw *markdownWriter) writeImpl(tree Project, indent string) error {
 	return nil
 }
 
-func (cw *csvWriter) Write(tree Project) error {
+func (cw *csvWriter) Write(tree *Project) error {
 	cw.Out.Write([]byte("project-name,license-name,parent-project-name\n"))
 	cw.writeImpl(tree, "")
 	return nil
 }
 
-func (cw *csvWriter) writeImpl(tree Project, parent string) {
+func (cw *csvWriter) writeImpl(tree *Project, parent string) {
 	line := fmt.Sprintf("%s,%s,%s\n", tree.Name(), joinLicenseNames(tree), parent)
 	cw.Out.Write([]byte(line))
 	for _, dep := range tree.Dependencies() {
@@ -61,12 +61,12 @@ func (cw *csvWriter) writeImpl(tree Project, parent string) {
 	}
 }
 
-func (jw *jsonWriter) Write(tree Project) error {
+func (jw *jsonWriter) Write(tree *Project) error {
 	jw.Out.Write([]byte(jw.jsonString(tree)))
 	return nil
 }
 
-func (jw *jsonWriter) dependency(deps []Project) string {
+func (jw *jsonWriter) dependency(deps Projects) string {
 	array := []string{}
 	for _, dep := range deps {
 		if dep != nil {
@@ -76,7 +76,7 @@ func (jw *jsonWriter) dependency(deps []Project) string {
 	return fmt.Sprintf(`,"dependencies":[%s]`, strings.Join(array, ","))
 }
 
-func (jw *jsonWriter) jsonString(tree Project) string {
+func (jw *jsonWriter) jsonString(tree *Project) string {
 	dependentString := ""
 	deps := tree.Dependencies()
 	if len(deps) > 0 {
@@ -85,7 +85,7 @@ func (jw *jsonWriter) jsonString(tree Project) string {
 	return fmt.Sprintf(`{"project-name":"%s","license-names":["%s"]%s}`, tree.Name(), joinLicenseNames(tree), dependentString)
 }
 
-func joinLicenseNames(tree Project) string {
+func joinLicenseNames(tree *Project) string {
 	licenseNames := []string{}
 	for _, license := range tree.Licenses() {
 		licenseNames = append(licenseNames, license.Name)
@@ -93,14 +93,14 @@ func joinLicenseNames(tree Project) string {
 	return strings.Join(licenseNames, ",")
 }
 
-func (yw *yamlWriter) Write(tree Project) error {
+func (yw *yamlWriter) Write(tree *Project) error {
 	yw.Out.Write([]byte("---\n"))
 	yw.Out.Write([]byte(yw.string(tree, "", "", "")))
 	yw.Out.Write([]byte("\n"))
 	return nil
 }
 
-func (yw *yamlWriter) string(tree Project, indent, header1, header2 string) string {
+func (yw *yamlWriter) string(tree *Project, indent, header1, header2 string) string {
 	base := fmt.Sprintf(`%s%sproject-name:%s
 %s%slicense-names:[%s]`, indent, header1, tree.Name(), indent, header2, joinLicenseNames(tree))
 	array := []string{}
@@ -117,11 +117,11 @@ func (yw *yamlWriter) string(tree Project, indent, header1, header2 string) stri
 	return base
 }
 
-func (tw *tomlWriter) Write(tree Project) error {
+func (tw *tomlWriter) Write(tree *Project) error {
 	return nil
 }
 
-func (xw *xmlWriter) Write(tree Project) error {
+func (xw *xmlWriter) Write(tree *Project) error {
 	data := fmt.Sprintf(`<?xml version="1.0"?>
 <purplecat>
 %s
@@ -130,7 +130,7 @@ func (xw *xmlWriter) Write(tree Project) error {
 	return nil
 }
 
-func (xw *xmlWriter) string(tree Project, indent string) string {
+func (xw *xmlWriter) string(tree *Project, indent string) string {
 	xmlLicenses := []string{}
 	for _, license := range tree.Licenses() {
 		xmlLicenses = append(xmlLicenses, indent+"  <license-name>"+license.Name+"</license-name>")

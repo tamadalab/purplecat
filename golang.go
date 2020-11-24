@@ -27,7 +27,7 @@ func (gmp *goModParser) IsTarget(path *Path, context *Context) bool {
 	return join.Exists(context)
 }
 
-func (gmp *goModParser) Parse(path *Path) (Project, error) {
+func (gmp *goModParser) Parse(path *Path) (*Project, error) {
 	return nil, fmt.Errorf("not implement yet")
 }
 

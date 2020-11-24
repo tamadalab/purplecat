@@ -80,7 +80,7 @@ func (mp *mavenParser) IsTarget(path *Path, context *Context) bool {
 }
 
 // Parse parses the given path as pom.xml and returns the instance of Project.
-func (mp *mavenParser) Parse(pomPath *Path) (Project, error) {
+func (mp *mavenParser) Parse(pomPath *Path) (*Project, error) {
 	if !isPom(pomPath.Base()) {
 		pomPath = pomPath.Join("pom.xml")
 	}
@@ -90,7 +90,7 @@ func (mp *mavenParser) Parse(pomPath *Path) (Project, error) {
 	return parsePom(pomPath, mp.context, 0)
 }
 
-func parsePom(pomPath *Path, context *Context, currentDepth int) (Project, error) {
+func parsePom(pomPath *Path, context *Context, currentDepth int) (*Project, error) {
 	if context.Depth < currentDepth {
 		return nil, fmt.Errorf("over the parsing depth limit %d, current: %d", context.Depth, currentDepth)
 	}
@@ -119,9 +119,9 @@ func parsePom(pomPath *Path, context *Context, currentDepth int) (Project, error
 	// return constructDependencyTree(root, pomPath.Dir(), context, currentDepth)
 }
 
-func hitCache(artifact *artifact, context *Context) (Project, bool) {
-	if licenses, ok := context.SearchCache(artifact.Name()); ok {
-		return &localProject{info: artifact, licenses: licenses}, true
+func hitCache(artifact *artifact, context *Context) (*Project, bool) {
+	if project, ok := context.SearchCache(artifact.Name()); ok {
+		return project, true
 	}
 	return nil, false
 }
@@ -147,7 +147,7 @@ func readProperties(node *xmlquery.Node, artifact *artifact) {
 	}
 }
 
-func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, currentDepth int) (Project, error) {
+func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, currentDepth int) (*Project, error) {
 	projectArtifact := parseProjectInfo(root)
 	if dep, ok := hitCache(projectArtifact, context); ok {
 		return dep, nil
@@ -157,8 +157,8 @@ func constructDependencyTree(root *xmlquery.Node, path *Path, context *Context, 
 	if !ok && projectArtifact.parent != nil {
 		licenses = findParentLicense(projectArtifact.parent, context, currentDepth)
 	}
-	project := &localProject{info: projectArtifact, licenses: licenses}
-	context.RegisterCache(projectArtifact.Name(), licenses)
+	project := context.NewProject(projectArtifact.Name(), licenses)
+	context.RegisterCache(project)
 	return parseDependency(projectArtifact, project, root, context, currentDepth)
 }
 
@@ -201,7 +201,7 @@ func normalizeProject(target, base *artifact) *artifact {
 	return target
 }
 
-func nodeToDependencyTree(base *artifact, node *xmlquery.Node, context *Context, currentDepth int) Project {
+func nodeToDependencyTree(base *artifact, node *xmlquery.Node, context *Context, currentDepth int) *Project {
 	artifact := newArtifact(node)
 	artifact = normalizeProject(artifact, base)
 	pomPath, err := constructPom(artifact, context)
@@ -212,14 +212,14 @@ func nodeToDependencyTree(base *artifact, node *xmlquery.Node, context *Context,
 	return dep
 }
 
-func parseDependency(art *artifact, project Project, root *xmlquery.Node, context *Context, currentDepth int) (Project, error) {
+func parseDependency(art *artifact, project *Project, root *xmlquery.Node, context *Context, currentDepth int) (*Project, error) {
 	dependencies, err := xmlquery.QueryAll(root, "/project/dependencies/dependency")
 	if err != nil {
 		return project, err
 	}
 	for _, dep := range dependencies {
 		dependency := nodeToDependencyTree(art, dep, context, currentDepth)
-		project.PutDependency(dependency)
+		project.AddDependency(dependency)
 	}
 	return project, nil
 }
@@ -230,7 +230,7 @@ func buildLicense(licenseNode *xmlquery.Node) *License {
 	return &License{Name: licenseName, URL: url}
 }
 
-func findLicensesFromPom(artifact *artifact, root *xmlquery.Node) ([]*License, bool) {
+func findLicensesFromPom(artifact *artifact, root *xmlquery.Node) (Licenses, bool) {
 	list, err := xmlquery.QueryAll(root, "/project/licenses/license")
 	licenses := []*License{}
 	if err != nil {

@@ -142,8 +142,7 @@ func (lfps *localFilePathSupporter) Dir(filePath *Path) string {
 }
 
 func (lfps *localFilePathSupporter) ExistFile(path *Path, context *Context) bool {
-	stat, err := os.Stat(path.Path)
-	result := err == nil && stat.Mode().IsRegular()
+	result := existFile(path.Path)
 	logger.Debugf("Exist(%s): %v", path.Path, result)
 	return result
 }
@@ -155,4 +154,14 @@ func (lfps *localFilePathSupporter) Open(path *Path, context *Context) (io.ReadC
 		return nil, err
 	}
 	return pom, nil
+}
+
+func existFile(path string) bool {
+	stat, err := os.Stat(path)
+	return err == nil && stat.Mode().IsRegular()
+}
+
+func existDir(path string) bool {
+	stat, err := os.Stat(path)
+	return err == nil && stat.IsDir()
 }

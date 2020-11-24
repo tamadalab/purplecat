@@ -12,38 +12,58 @@ type ActionType int
 // NetworkAccessFlag is the one of ActType, which represents fo rNetworkAccess checking.
 const NetworkAccessFlag ActionType = iota + 1
 
-type localProject struct {
-	info         projectNamer
-	licenses     []*License
-	dependencies []Project
+// Licenses is the slice for pointers of License.
+type Licenses []*License
+
+// Projects is the slice for pointers of Project.
+type Projects []*Project
+
+// Project shows the project information especially its name, licenses, and dependencies.
+type Project struct {
+	PName       string        `json:"name"`
+	LicenseList []*License    `json:"licenses"`
+	Deps        []string      `json:"dependencies"`
+	context     *CacheContext `json:"-"`
 }
 
-type projectNamer interface {
-	Name() string
+// NewProject creates an instance of Project.
+func (context *Context) NewProject(name string, licenses Licenses) *Project {
+	project := &Project{PName: name, LicenseList: licenses, context: context.Cache, Deps: []string{}}
+	context.Cache.Register(project)
+	return project
 }
 
-func (project *localProject) Name() string {
-	return project.info.Name()
+// Name returns the name of the receiver project.
+func (project *Project) Name() string {
+	return project.PName
 }
 
-func (project *localProject) Licenses() []*License {
-	return project.licenses
+// Licenses returns the license list of the receiver project.
+func (project *Project) Licenses() Licenses {
+	return project.LicenseList
 }
 
-func (project *localProject) Dependencies() []Project {
-	return project.dependencies
+// Dependencies returns the dependency list of the receiver project.
+func (project *Project) Dependencies() Projects {
+	projects := []*Project{}
+	for _, dep := range project.Deps {
+		depProject, ok := project.context.Find(dep)
+		if ok {
+			projects = append(projects, depProject)
+		}
+	}
+	return projects
 }
 
-func (project *localProject) PutDependency(p Project) {
-	project.dependencies = append(project.dependencies, p)
-}
-
-// Project shows the project information especially its name.
-type Project interface {
-	Name() string
-	Licenses() []*License
-	Dependencies() []Project
-	PutDependency(project Project)
+// AddDependency adds the given project as the dependency for the receiver project.
+func (project *Project) AddDependency(p *Project) {
+	if p == nil {
+		return
+	}
+	if _, ok := project.context.Find(p.Name()); !ok {
+		project.context.Register(p)
+	}
+	project.Deps = append(project.Deps, p.Name())
 }
 
 // UnknownLicense is the instance of license, means unknown.
@@ -62,12 +82,11 @@ type Context struct {
 	Format            string
 	Depth             int
 	Cache             *CacheContext
-	CacheDB           CacheDB
 }
 
 // NewContext creates the instance of Context by given arguments.
 func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
-	context, _ := NewContextWithCache(denyNetworkAccess, format, depth, NoCache)
+	context, _ := NewContextWithCache(denyNetworkAccess, format, depth, MemoryCache)
 	return context
 }
 
@@ -77,35 +96,26 @@ func NewContextWithCache(denyNetworkAccess bool, format string, depth int, cType
 	if err != nil {
 		return nil, err
 	}
-	cacheDB, err := NewCacheDB(cacheContext)
-	if err != nil {
+	if err := cacheContext.Init(); err != nil {
 		return nil, err
 	}
-	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth, Cache: cacheContext, CacheDB: cacheDB}, nil
+	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth, Cache: cacheContext}, nil
 }
 
 // SearchCache searches from cache database.
-func (context *Context) SearchCache(name string) ([]*License, bool) {
-	if context.CacheDB == nil {
-		db, err := NewCacheDB(context.Cache)
-		if err != nil {
-			return nil, false
-		}
-		context.CacheDB = db
+func (context *Context) SearchCache(name string) (*Project, bool) {
+	if context.Cache == nil {
+		return nil, false
 	}
-	return context.CacheDB.Find(name)
+	return context.Cache.Find(name)
 }
 
 // RegisterCache stores the given licenses to cache database.
-func (context *Context) RegisterCache(name string, licenses []*License) bool {
-	if context.CacheDB == nil {
-		db, err := NewCacheDB(context.Cache)
-		if err != nil {
-			return false
-		}
-		context.CacheDB = db
+func (context *Context) RegisterCache(project *Project) bool {
+	if context.Cache == nil {
+		return false
 	}
-	return context.CacheDB.Register(name, licenses)
+	return context.Cache.Register(project)
 }
 
 // Allow checks given ActType is allowed in the current context.

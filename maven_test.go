@@ -5,7 +5,7 @@ import "testing"
 func TestParse(t *testing.T) {
 	projectName := "testdata/mavenproject"
 	path := NewPath(projectName)
-	parser := &mavenParser{NewContext(false, "json", 1)}
+	parser := &mavenParser{NewContext(false, "json", 2)}
 
 	tree, err := parser.Parse(path)
 	if err != nil {
@@ -17,7 +17,7 @@ func TestParse(t *testing.T) {
 	validateDependencyTree(t, tree.Dependencies()[1], "junit/junit/4.13.1", "Eclipse Public License 1.0", 2)
 }
 
-func validateDependencyTree(t *testing.T, tree Project, wontProjectName, wontLicense string, wontDependencyCount int) {
+func validateDependencyTree(t *testing.T, tree *Project, wontProjectName, wontLicense string, wontDependencyCount int) {
 	if tree.Name() != wontProjectName {
 		t.Errorf("project name did not match, wont %s, got %s", wontProjectName, tree.Name())
 	}

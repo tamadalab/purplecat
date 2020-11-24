@@ -42,7 +42,7 @@ func helpMessage(progName string) string {
 %s [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
     -c, --cache-type <TYPE>        specifies the cache type. (default: default).
-                                   Available values are: default, ref-only, and never.
+                                   Available values are: default, ref-only, newdb and memory.
         --cachedb-path <DBPATH>    specifies the cache database path
                                    (default: ~/.config/purplecat/cachedb.json). 
     -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
@@ -100,7 +100,7 @@ func updateLogLevel(level string) {
 }
 
 func validateCacheType(opts *options) error {
-	return generalValidator([]string{"default", "ref-only", "never"}, opts.cacheType, "%s: unknown cache type")
+	return generalValidator([]string{"default", "ref-only", "newdb", "memory"}, opts.cacheType, "%s: unknown cache type")
 }
 
 func validateCachePath(opts *options) error {
@@ -139,6 +139,17 @@ func validate(opts *options) error {
 	return nil
 }
 
+func initializeCache(opts *options) (*options, error) {
+	cType := purplecat.ParseCacheType(opts.cacheType)
+	cc, err := purplecat.NewCacheContextWithDBPath(cType, opts.cachePath)
+	if err != nil {
+		return opts, err
+	}
+	opts.context.Cache = cc
+	opts.context.Cache.Init()
+	return opts, nil
+}
+
 func parseArgs(args []string) (*options, error) {
 	opts := &options{context: &purplecat.Context{}}
 	flags := constructFlags(args, opts)
@@ -150,10 +161,10 @@ func parseArgs(args []string) (*options, error) {
 	}
 	updateLogLevel(opts.logLevel)
 	opts.args = flags.Args()[1:]
-	return opts, nil
+	return initializeCache(opts)
 }
 
-func performEach(projectPath string, context *purplecat.Context) (purplecat.Project, error) {
+func performEach(projectPath string, context *purplecat.Context) (*purplecat.Project, error) {
 	parser, err := context.GenerateParser(projectPath)
 	if err != nil {
 		return nil, err
@@ -161,16 +172,30 @@ func performEach(projectPath string, context *purplecat.Context) (purplecat.Proj
 	return parser.Parse(purplecat.NewPath(projectPath))
 }
 
-func perform(opts *options) int {
+func createWriter(opts *options) (purplecat.Writer, error) {
 	dest, err := opts.destination()
 	if err != nil {
-		return printError(err, 9)
+		return nil, err
 	}
 	writer, err2 := opts.context.NewWriter(dest)
 	if err2 != nil {
-		return printError(err2, 8)
+		return nil, err2
 	}
+	return writer, nil
+}
 
+func postProcess(context *purplecat.Context) int {
+	if err := context.Cache.Store(); err != nil {
+		return printError(err, 8)
+	}
+	return 0
+}
+
+func perform(opts *options) int {
+	writer, err := createWriter(opts)
+	if err != nil {
+		return printError(err, 9)
+	}
 	for _, project := range opts.args {
 		tree, err := performEach(project, opts.context)
 		if err != nil {
@@ -178,7 +203,7 @@ func perform(opts *options) int {
 		}
 		writer.Write(tree)
 	}
-	return 0
+	return postProcess(opts.context)
 }
 
 func goMain(args []string) int {

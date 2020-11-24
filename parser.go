@@ -7,7 +7,7 @@ import (
 // Parser is the interface for parsing the build file of the software project.
 type Parser interface {
 	// parses the project located on the given path, and returns the built project instance.
-	Parse(path *Path) (Project, error)
+	Parse(path *Path) (*Project, error)
 	// returns true if the project located on the given path is the target of this parser instance.
 	IsTarget(path *Path, context *Context) bool
 }
