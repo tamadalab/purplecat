@@ -173,7 +173,7 @@ func constructProject(root *xmlquery.Node, path *Path, context *Context, current
 	}
 	project := context.NewProject(artifact.Name(), licenses)
 	context.RegisterCache(project)
-	return readDependencies(artifact, project, root, context, currentDepth)
+	return readDependencies(artifact, project, root)
 }
 
 func constructCentralRepoPomPath(artifact *artifact) *Path {
@@ -221,7 +221,7 @@ func normalizeProject(target, base *artifact) *artifact {
 	return target
 }
 
-func readDependencies(artifact *artifact, project *Project, root *xmlquery.Node, context *Context, currentDepth int) (*Project, error) {
+func readDependencies(artifact *artifact, project *Project, root *xmlquery.Node) (*Project, error) {
 	dependencies, err := xmlquery.QueryAll(root, "/project/dependencies/dependency")
 	if err != nil {
 		return project, err
