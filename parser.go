@@ -4,22 +4,24 @@ import (
 	"fmt"
 )
 
-/*Parser is the interface for parsing the build file of the software project.*/
+// Parser is the interface for parsing the build file of the software project.
 type Parser interface {
+	// parses the project located on the given path, and returns the built project instance.
 	Parse(path *Path) (*Project, error)
+	// returns true if the project located on the given path is the target of this parser instance.
 	IsTarget(path *Path, context *Context) bool
 }
 
-/*GradleParser is the instance of Parser for parsing build.gradle (not yet).*/
-type GradleParser struct {
+// GradleParser is the instance of Parser for parsing build.gradle (not yet).
+type gradleParser struct {
 	context *Context
 }
 
-/*GenerateParser creates and returns the instance of Parser for given path. */
+// GenerateParser creates and returns the instance of Parser for given path.
 func (context *Context) GenerateParser(givenPath string) (Parser, error) {
 	parsers := []Parser{
-		&MavenParser{context: context},
-		&GoModParser{context: context},
+		&mavenParser{context: context},
+		&goModParser{context: context},
 		// {"build.gradle", &GradleParser{context: context}},
 	}
 	path := NewPath(givenPath)

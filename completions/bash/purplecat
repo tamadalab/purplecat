@@ -8,18 +8,23 @@ __purplecat() {
             COMPREPLY=($(compgen -W "${formats}" -- "${cur}"))
             return 0
             ;;
-        "--level" | "-l")
+        "--cache-type" | "-c")
+            local types="default ref-only newdb memory"
+            COMPREPLY=($(compgen -W "${types}" -- "${cur}"))
+            return 0
+            ;;
+        "--log-level" | "-l")
             local levels="DEBUG INFO WARN FATAL"
             COMPREPLY=($(compgen -W "${levels}" -- "${cur}"))
             return 0
             ;;
-        "--output" | "-o")
+        "--output" | "-o" | "--cachedb-path")
             compopt -o filenames
             COMPREPLY=($(compgen -f -- "${cur}"))
             return 0
             ;;
     esac
-    local opts="-d -f -l -o -N -h --depth --format --level --output --offline --help"
+    local opts="-c -d -f -l -o -N -h --cache-type --cachedb-path --depth --format --log-level --output --offline --help"
     if [[ "$cur" =~ ^\- ]]; then
         COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
         return 0

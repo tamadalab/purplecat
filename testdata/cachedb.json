@@ -1,0 +1,14 @@
+{
+    "cachedb": {
+        "github.com/tamadalab/purplecat@v0.1.0": {
+            "name": "github.com/tamadalab/purplecat@v0.1.0",
+            "licenses": [
+                {
+                    "name": "Do What The F*ck You Want To Public License",
+                    "spdx_id": "WTFPL",
+                    "url": "http://www.wtfpl.net/about/"
+                }
+            ]
+        }
+    }
+}

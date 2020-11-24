@@ -1,6 +1,6 @@
 GO := go
 NAME := purplecat
-VERSION := 0.1.0
+VERSION := 0.2.0
 DIST := $(NAME)-$(VERSION)
 
 all: test build

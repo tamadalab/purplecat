@@ -6,79 +6,142 @@ import (
 	"strings"
 )
 
-/*ActType shows the acton types for Context.
- */
-type ActType int
+// ActionType shows the acton types for Context.
+type ActionType int
 
-/*NetworkAccessFlag is the one of ActType, which represents fo rNetworkAccess checking.
- */
-const NetworkAccessFlag ActType = iota + 1
+// NetworkAccessFlag is the one of ActType, which represents fo rNetworkAccess checking.
+const NetworkAccessFlag ActionType = iota + 1
 
-/*Project represents the software project, contains its name, licenses, and dependencies.
- */
+// Licenses is the slice for pointers of License.
+type Licenses []*License
+
+// Projects is the slice for pointers of Project.
+type Projects []*Project
+
+// Project shows the project information especially its name, licenses, and dependencies.
 type Project struct {
-	Info         ProjectInfo
-	Licenses     []*License
-	Dependencies []*Project
+	PName       string        `json:"name"`
+	LicenseList []*License    `json:"licenses"`
+	Deps        []string      `json:"dependencies"`
+	context     *CacheContext `json:"-"`
 }
 
-/*ProjectInfo shows the project information especially its name.
- */
-type ProjectInfo interface {
-	Name() string
+// NewProject creates an instance of Project.
+func (context *Context) NewProject(name string, licenses Licenses) *Project {
+	project := &Project{PName: name, LicenseList: licenses, context: context.Cache, Deps: []string{}}
+	context.Cache.Register(project)
+	return project
 }
 
-/*Context means application context of purplecat. */
-type Context struct {
-	DenyNetworkAccess bool
-	Format            string
-	Depth             int
+// Name returns the name of the receiver project.
+func (project *Project) Name() string {
+	return project.PName
 }
 
-/*UnknownLicense is the instance of license, means unknown. */
+// Licenses returns the license list of the receiver project.
+func (project *Project) Licenses() Licenses {
+	return project.LicenseList
+}
+
+// Dependencies returns the dependency list of the receiver project.
+func (project *Project) Dependencies() Projects {
+	projects := []*Project{}
+	for _, dep := range project.Deps {
+		depProject, ok := project.context.Find(dep)
+		if ok {
+			projects = append(projects, depProject)
+		}
+	}
+	return projects
+}
+
+// AddDependency adds the given project as the dependency for the receiver project.
+func (project *Project) AddDependency(p *Project) {
+	if p == nil {
+		return
+	}
+	if _, ok := project.context.Find(p.Name()); !ok {
+		project.context.Register(p)
+	}
+	project.Deps = append(project.Deps, p.Name())
+}
+
+// UnknownLicense is the instance of license, means unknown.
 var UnknownLicense = &License{Name: "unknown", SpdxID: "unknown", URL: ""}
 
-/*License represents the license name, and its url. */
+// License represents the license name, and its url.
 type License struct {
 	Name   string `json:"name"`
 	SpdxID string `json:"spdx_id"`
 	URL    string `json:"url"`
 }
 
-/*NewContext creates the instance of Context by given arguments. */
-func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
-	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth}
+// Context means application context of purplecat.
+type Context struct {
+	DenyNetworkAccess bool
+	Format            string
+	Depth             int
+	Cache             *CacheContext
 }
 
-/*Allow checks given ActType is allowed in the current context. */
-func (context *Context) Allow(actType ActType) bool {
+// NewContext creates the instance of Context by given arguments.
+func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
+	context, _ := NewContextWithCache(denyNetworkAccess, format, depth, MemoryCache)
+	return context
+}
+
+// NewContextWithCache creates the instance of Context with loading cache database by given arguments.
+func NewContextWithCache(denyNetworkAccess bool, format string, depth int, cType CacheType) (*Context, error) {
+	cacheContext, err := NewCacheContext(cType)
+	if err != nil {
+		return nil, err
+	}
+	if err := cacheContext.Init(); err != nil {
+		return nil, err
+	}
+	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth, Cache: cacheContext}, nil
+}
+
+// SearchCache searches from cache database.
+func (context *Context) SearchCache(name string) (*Project, bool) {
+	if context.Cache == nil {
+		return nil, false
+	}
+	return context.Cache.Find(name)
+}
+
+// RegisterCache stores the given licenses to cache database.
+func (context *Context) RegisterCache(project *Project) bool {
+	if context.Cache == nil {
+		return false
+	}
+	return context.Cache.Register(project)
+}
+
+// Allow checks given ActType is allowed in the current context.
+func (context *Context) Allow(actType ActionType) bool {
 	if actType == NetworkAccessFlag {
 		return !context.DenyNetworkAccess
 	}
 	return false
 }
 
-/*NewWriter creates an suitable Writer instance. */
+// NewWriter creates an suitable Writer instance.
 func (context *Context) NewWriter(out io.Writer) (Writer, error) {
 	switch strings.ToLower(context.Format) {
 	case "csv":
-		return &CsvWriter{Out: out}, nil
+		return &csvWriter{Out: out}, nil
 	case "json":
-		return &JSONWriter{Out: out}, nil
+		return &jsonWriter{Out: out}, nil
 	case "toml":
-		return &TomlWriter{Out: out}, nil
+		return &tomlWriter{Out: out}, nil
 	case "yaml", "yml":
-		return &YamlWriter{Out: out}, nil
+		return &yamlWriter{Out: out}, nil
 	case "xml":
-		return &XMLWriter{Out: out}, nil
+		return &xmlWriter{Out: out}, nil
 	case "markdown", "md":
-		return &MarkdownWriter{Out: out}, nil
+		return &markdownWriter{Out: out}, nil
 	default:
 		return nil, fmt.Errorf("%s: unknown format", context.Format)
 	}
-}
-
-/*ParseProject find the project and its license from given path. */
-func ParseProject(projectPath string) *Project {
-	return nil
 }

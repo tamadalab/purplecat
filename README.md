@@ -4,7 +4,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamadalab/purplecat)](https://goreportcard.com/report/github.com/tamadalab/purplecat)
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.1.0)
+[![Version](https://img.shields.io/badge/Version-0.2.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.2.0)
 [![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 # :cat: purplecat
@@ -22,15 +22,17 @@ $ purplecat -h
 purplecat version 0.1.0
 purplecat [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -d, --depth <DEPTH>       specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
-                              Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
-                              Available values are: DEBUG, INFO, WARN, SEVERE
-    -o, --output <FILE>       specifies the destination file (default: STDOUT).
-    -N, --offline             offline mode (no network access).
+    -c, --cachedb-path <DBPATH>    specifies cache database path.
+    -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>          specifies the format of the result. Default is 'markdown'.
+                                   Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --level <LOGLEVEL>         specifies the log level. (default: WARN).
+                                   Available values are: DEBUG, INFO, WARN, SEVERE
+        --no-cache                 No cache mode.
+    -o, --output <FILE>            specifies the destination file (default: STDOUT).
+    -N, --offline                  offline mode (no network access).
 
-    -h, --help                prints this message.
+    -h, --help                    prints this message.
 PROJECT
     target project for extracting dependent libraries and their licenses.
 BUILD_FILE

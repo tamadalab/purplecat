@@ -11,10 +11,10 @@ func TestGenerateParser(t *testing.T) {
 		typeName    string
 		successFlag bool
 	}{
-		{"./testdata/mavenproject", "MavenParser", true},
-		{"./testdata/mavenproject/pom.xml", "MavenParser", true},
-		{"./testdata/goproject", "GoModParser", true},
-		{"./testdata/goproject/go.mod", "GoModParser", true},
+		{"./testdata/mavenproject", "mavenParser", true},
+		{"./testdata/mavenproject/pom.xml", "mavenParser", true},
+		{"./testdata/goproject", "goModParser", true},
+		{"./testdata/goproject/go.mod", "goModParser", true},
 		{"./testdata/unknownproject", "", false},
 		{"./testdata/unknownproject/Makefile", "", false},
 		{"./testdata/missingproject", "", false},

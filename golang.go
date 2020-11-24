@@ -9,7 +9,7 @@ import (
 	"github.com/tamadalab/purplecat/logger"
 )
 
-type GoModParser struct {
+type goModParser struct {
 	context *Context
 }
 
@@ -18,7 +18,7 @@ const (
 	pkgGoDevURL    = "https://pkg.go.dev"
 )
 
-func (gmp *GoModParser) IsTarget(path *Path, context *Context) bool {
+func (gmp *goModParser) IsTarget(path *Path, context *Context) bool {
 	base := path.Base()
 	if base == "go.mod" {
 		return path.Exists(context)
@@ -27,7 +27,7 @@ func (gmp *GoModParser) IsTarget(path *Path, context *Context) bool {
 	return join.Exists(context)
 }
 
-func (gmp *GoModParser) Parse(path *Path) (*Project, error) {
+func (gmp *goModParser) Parse(path *Path) (*Project, error) {
 	return nil, fmt.Errorf("not implement yet")
 }
 
