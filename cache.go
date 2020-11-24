@@ -3,6 +3,7 @@ package purplecat
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -214,9 +215,9 @@ func (ddb *defaultCacheDB) Find(projectName string) (*Project, bool) {
 	project, ok := ddb.DB[projectName]
 	if ok {
 		logger.Infof("Cache found(%s: %v)", projectName, project)
-	}
-	if project.context == nil {
-		project.context = ddb.context
+		if project.context == nil {
+			project.context = ddb.context
+		}
 	}
 	return project, ok
 }
@@ -244,6 +245,10 @@ func (ddb *defaultCacheDB) Store() error {
 		return err
 	}
 	defer writer.Close()
+	return storeImpl(writer, ddb)
+}
+
+func storeImpl(writer io.Writer, ddb *defaultCacheDB) error {
 	bytes, err := json.Marshal(ddb)
 	if err != nil {
 		return err
