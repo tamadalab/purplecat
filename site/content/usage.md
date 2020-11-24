@@ -4,18 +4,22 @@ title: ":runner: Usage"
 
 ```sh
 $ purplecat -h
-purplecat version 0.1.0
+purplecat version 0.2.0
 purplecat [OPTIONS] <PROJECTs...|BUILD_FILEs...>
 OPTIONS
-    -d, --depth <DEPTH>       specifies the depth for parsing (default: 1)
-    -f, --format <FORMAT>     specifies the format of the result. Default is 'markdown'.
-                              Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --level <LOGLEVEL>    specifies the log level. (default: WARN).
-                              Available values are: DEBUG, INFO, WARN, SEVERE
-    -o, --output <FILE>       specifies the destination file (default: STDOUT).
-    -N, --offline             offline mode (no network access).
+    -c, --cache-type <TYPE>        specifies the cache type. (default: default).
+                                   Available values are: default, ref-only, newdb and memory.
+        --cachedb-path <DBPATH>    specifies the cache database path
+                                   (default: ~/.config/purplecat/cachedb.json). 
+    -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
+    -f, --format <FORMAT>          specifies the result format. Default is 'markdown'.
+                                   Available values are: CSV, JSON, YAML, XML, and Markdown.
+    -l, --log-level <LOGLEVEL>     specifies the log level. (default: WARN).
+                                   Available values are: DEBUG, INFO, WARN, and FATAL
+    -o, --output <FILE>            specifies the destination file (default: STDOUT).
+    -N, --offline                  offline mode (no network access).
 
-    -h, --help                prints this message.
+    -h, --help                     prints this message.
 PROJECT
     target project for extracting dependent libraries and their licenses.
 BUILD_FILE
@@ -124,7 +128,8 @@ license-name: BSD
 [![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 * `tamadalab/purplecat`
-    * `1.0.0`, `latest`
+    * `0.2.0`, `latest`
+    * `0.1.0`
 
 ```sh
 $ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat:latest pom.xml
