@@ -166,6 +166,10 @@ func loadDefaultCacheDB(cc *CacheContext) (*defaultCacheDB, error) {
 		return nil, err
 	}
 	defer fp.Close()
+	return loadImpl(cc, fp)
+}
+
+func loadImpl(cc *CacheContext, reader io.Reader) (*defaultCacheDB, error) {
 	data, err := ioutil.ReadAll(fp)
 	if err != nil {
 		return nil, err
