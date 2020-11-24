@@ -170,7 +170,7 @@ func loadDefaultCacheDB(cc *CacheContext) (*defaultCacheDB, error) {
 }
 
 func loadImpl(cc *CacheContext, reader io.Reader) (*defaultCacheDB, error) {
-	data, err := ioutil.ReadAll(fp)
+	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
