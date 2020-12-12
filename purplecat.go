@@ -20,10 +20,10 @@ type Projects []*Project
 
 // Project shows the project information especially its name, licenses, and dependencies.
 type Project struct {
-	PName       string        `json:"name"`
-	LicenseList []*License    `json:"licenses"`
-	Deps        []string      `json:"dependencies"`
-	context     *CacheContext `json:"-"`
+	PName       string     `json:"name"`
+	LicenseList []*License `json:"licenses"`
+	Deps        []string   `json:"dependencies"`
+	context     CacheDB    `json:"-"`
 }
 
 // NewProject creates an instance of Project.
@@ -81,7 +81,7 @@ type Context struct {
 	DenyNetworkAccess bool
 	Format            string
 	Depth             int
-	Cache             *CacheContext
+	Cache             CacheDB
 }
 
 // NewContext creates the instance of Context by given arguments.
@@ -92,14 +92,11 @@ func NewContext(denyNetworkAccess bool, format string, depth int) *Context {
 
 // NewContextWithCache creates the instance of Context with loading cache database by given arguments.
 func NewContextWithCache(denyNetworkAccess bool, format string, depth int, cType CacheType) (*Context, error) {
-	cacheContext, err := NewCacheContext(cType)
+	cache, err := NewCacheDB(cType)
 	if err != nil {
 		return nil, err
 	}
-	if err := cacheContext.Init(); err != nil {
-		return nil, err
-	}
-	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth, Cache: cacheContext}, nil
+	return &Context{DenyNetworkAccess: denyNetworkAccess, Format: format, Depth: depth, Cache: cache}, nil
 }
 
 // SearchCache searches from cache database.
