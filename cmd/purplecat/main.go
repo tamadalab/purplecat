@@ -44,7 +44,7 @@ OPTIONS
     -c, --cache-type <TYPE>        specifies the cache type. (default: default).
                                    Available values are: default, ref-only, newdb and memory.
         --cachedb-path <DBPATH>    specifies the cache database path
-                                   (default: ~/.config/purplecat/cachedb.json). 
+                                   (default: ~/.config/purplecat/cachedb.json).
     -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
     -f, --format <FORMAT>          specifies the result format. Default is 'markdown'.
                                    Available values are: CSV, JSON, YAML, XML, and Markdown.
@@ -145,12 +145,11 @@ func validate(opts *options) error {
 
 func initializeCache(opts *options) (*options, error) {
 	cType := purplecat.ParseCacheType(opts.cacheType)
-	cc, err := purplecat.NewCacheContextWithDBPath(cType, opts.cachePath)
+	cc, err := purplecat.NewCacheDBWithPath(cType, opts.cachePath)
 	if err != nil {
 		return opts, err
 	}
 	opts.context.Cache = cc
-	opts.context.Cache.Init()
 	return opts, nil
 }
 

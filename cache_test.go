@@ -45,12 +45,11 @@ func TestCacheTypeString(t *testing.T) {
 func TestCacheStore(t *testing.T) {
 	os.Setenv(CacheDBEnvName, "testdata/output.json")
 	defer os.Unsetenv(CacheDBEnvName)
-	cc, _ := NewCacheContext(DefaultCache)
-	db, err := NewCacheDB(cc)
+	db, err := NewCacheDB(DefaultCache)
 	if err != nil {
 		t.Errorf("load error: %s", err.Error())
 	}
-	project := &Project{PName: "github.com/tamadalab/purplecat@v0.1.0", LicenseList: []*License{LicenseWTFPL}, context: cc, Deps: []string{}}
+	project := &Project{PName: "github.com/tamadalab/purplecat@v0.1.0", LicenseList: []*License{LicenseWTFPL}, context: db, Deps: []string{}}
 	ok := db.Register(project)
 	if !ok {
 		t.Errorf("register failed")
@@ -76,15 +75,15 @@ func TestCacheType(t *testing.T) {
 		{MemoryCache, false, MemoryCache},
 		{RefOnlyCache, false, RefOnlyCache},
 		{DefaultCache, false, DefaultCache},
-		{-1, true, -1},
+		{-1, false, MemoryCache},
 	}
 	for _, td := range testdata {
-		context, err := NewCacheContext(td.giveType)
+		context, err := NewCacheDB(td.giveType)
 		if td.wontError && err == nil {
-			t.Errorf("NewCacheContext(%d) wont error: %v, got %v", td.giveType, td.wontError, err)
+			t.Errorf("NewCacheDB(%d) wont error: %v, got %v", td.giveType, td.wontError, err)
 		}
-		if err == nil && context.cType != td.wontType {
-			t.Errorf("NewContext(%d) result did not match, wont %d, got %d", td.giveType, td.wontType, context.cType)
+		if err == nil && context.Type() != td.wontType {
+			t.Errorf("NewContextDB(%d) result did not match, wont %d, got %d", td.giveType, td.wontType, context.Type())
 		}
 	}
 }
@@ -93,8 +92,7 @@ var License0BSD = &License{Name: "BSD Zero Clause License", SpdxID: "0BSD", URL:
 var LicenseWTFPL = &License{Name: "Do What The F*ck You Want To Public License", SpdxID: "WTFPL", URL: "http://www.wtfpl.net/about/"}
 
 func TestNoCacheDB(t *testing.T) {
-	cc, _ := NewCacheContext(MemoryCache)
-	db, err := NewCacheDB(cc)
+	db, err := NewCacheDB(MemoryCache)
 	if err != nil {
 		t.Errorf("NewCacheDB(%d) creation error: %v", MemoryCache, err)
 	}
@@ -102,7 +100,7 @@ func TestNoCacheDB(t *testing.T) {
 	if found {
 		t.Errorf("FindError")
 	}
-	project := &Project{PName: "github.com/tamadalab/purplecat@v0.1.0", LicenseList: []*License{LicenseWTFPL}, context: cc, Deps: []string{}}
+	project := &Project{PName: "github.com/tamadalab/purplecat@v0.1.0", LicenseList: []*License{LicenseWTFPL}, context: db, Deps: []string{}}
 	ok := db.Register(project)
 	if !ok {
 		t.Errorf("Register error")
@@ -123,30 +121,29 @@ func TestNoCacheDB(t *testing.T) {
 func TestRefOnlyCacheDB(t *testing.T) {
 	os.Setenv(CacheDBEnvName, "testdata/cachedb.json")
 	defer os.Unsetenv(CacheDBEnvName)
-	cc, _ := NewCacheContext(RefOnlyCache)
+	db, err := NewCacheDB(RefOnlyCache)
 	key := "github.com/tamadalab/purplecat@v0.1.0"
-	err := cc.Init()
 	if err != nil {
 		t.Errorf("NewCacheDB(%d) creation error: %v", RefOnlyCache, err)
 	}
-	_, found := cc.Find(key)
+	_, found := db.Find(key)
 	if !found {
 		t.Errorf("db.Find(%s) did not match, wont %v", key, true)
 	}
-	project := &Project{PName: key, LicenseList: []*License{License0BSD}, context: cc, Deps: []string{}}
-	ok := cc.Register(project)
+	project := &Project{PName: key, LicenseList: []*License{License0BSD}, context: db, Deps: []string{}}
+	ok := db.Register(project)
 	if !ok {
 		t.Errorf("db.Register(%s) did not match, wont %v", key, false)
 	}
-	_, found = cc.Find(key)
+	_, found = db.Find(key)
 	if !found {
 		t.Errorf("db.Find(%s) did not match, wont %v", key, true)
 	}
-	_, success := cc.Delete(key)
+	_, success := db.Delete(key)
 	if !success {
 		t.Errorf("db.Delete(%s) did not match, wont %v", key, false)
 	}
-	if err := cc.Store(); err != nil {
+	if err := db.Store(); err != nil {
 		t.Errorf("db.Store() did not match, wont not nil, but nil")
 	}
 }

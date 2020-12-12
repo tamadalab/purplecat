@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/mitchellh/go-homedir"
 	"github.com/tamadalab/purplecat/logger"
@@ -62,13 +63,6 @@ const defaultCacheDBPath = "${HOME}/.config/purplecat/cachedb.json"
 // CacheDBEnvName is the environment name for the cache database path.
 const CacheDBEnvName = "PURPLECAT_CACHE_DB_PATH"
 
-// CacheContext shows the settings for cache database.
-type CacheContext struct {
-	cType   CacheType
-	path    string
-	cacheDB CacheDB
-}
-
 func findCacheDBPath() string {
 	path := os.Getenv(CacheDBEnvName)
 	if path == "" {
@@ -88,98 +82,76 @@ func normalizeCachePath(fromPath string) string {
 	return strings.ReplaceAll(fromPath, `${HOME}`, home)
 }
 
-// NewCacheContext creates an instance of CacheContext.
-func NewCacheContext(cType CacheType) (*CacheContext, error) {
-	return NewCacheContextWithDBPath(cType, findCacheDBPath())
-}
-
-// NewCacheContextWithDBPath creates an instance of CacheContext by specifying the cache database path.
-func NewCacheContextWithDBPath(cType CacheType, cachePath string) (*CacheContext, error) {
-	if cachePath == "" {
-		cachePath = findCacheDBPath()
-	}
-	normalizedCachePath := normalizeCachePath(cachePath)
-	availableTypes := []CacheType{MemoryCache, RefOnlyCache, DefaultCache}
-	for _, aType := range availableTypes {
-		if cType == aType {
-			return &CacheContext{cType: cType, path: normalizedCachePath}, nil
-		}
-	}
-	return nil, fmt.Errorf("%d: unknown cache type", cType)
-}
-
 // CacheDB is an interface of the cache database.
 type CacheDB interface {
+	Type() CacheType
 	Find(projectName string) (foundProject *Project, found bool)
 	Register(project *Project) bool
 	Delete(projectName string) (deletedProject *Project, success bool)
 	Store() error
-}
-
-// Find finds the licenses of the project with the given name.
-func (cc *CacheContext) Find(projectName string) (foundProject *Project, found bool) {
-	return cc.cacheDB.Find(projectName)
-}
-
-// Register registers the licenses of corresponding project, it returns true in successing the registration.
-func (cc *CacheContext) Register(project *Project) bool {
-	return cc.cacheDB.Register(project)
-}
-
-// Delete removes the licenses and project relation from this database.
-// This function returns true in successing the deletion.
-func (cc *CacheContext) Delete(projectName string) (deletedProject *Project, success bool) {
-	return cc.cacheDB.Delete(projectName)
-}
-
-// Store saves this database into the certain location.
-func (cc *CacheContext) Store() error {
-	return cc.cacheDB.Store()
-}
-
-// Init initializes the CacheContext by createing the suitable CacheDB.
-func (cc *CacheContext) Init() error {
-	db, err := NewCacheDB(cc)
-	if err == nil {
-		cc.cacheDB = db
-	}
-	return err
+	Clear() error
+	Dump(io.Writer) error
 }
 
 // NewCacheDB creates suitable CacheDB by the given cache context.
-func NewCacheDB(cc *CacheContext) (CacheDB, error) {
-	logger.Debugf("NewCacheDB(%d)", cc.cType)
-	if cc.cType == MemoryCache {
-		return &memoryCacheDB{db: map[string]*Project{}}, nil
-	} else if cc.cType == NewCache {
-		return &defaultCacheDB{DB: map[string]*Project{}, context: cc}, nil
-	}
-	defaultDB, err := loadDefaultCacheDB(cc)
-	if err == nil && cc.cType == RefOnlyCache {
-		return &memoryCacheDB{db: defaultDB.DB}, err
-	}
-	return defaultDB, err
+func NewCacheDB(cType CacheType) (CacheDB, error) {
+	return NewCacheDBWithPath(cType, "")
 }
 
-func loadDefaultCacheDB(cc *CacheContext) (*defaultCacheDB, error) {
-	logger.Debugf("existFile(%s): %v", cc.path, existFile(cc.path))
-	if !existFile(cc.path) {
-		return &defaultCacheDB{context: cc, DB: map[string]*Project{}}, nil
+func newMemoryCacheDB(cType CacheType) CacheDB {
+	return &memoryCacheDB{db: map[string]*Project{}, cType: cType}
+}
+
+func newDefaultCacheDB(dbpath string, cType CacheType) CacheDB {
+	return &defaultCacheDB{DB: map[string]*Project{}, path: dbpath, cType: cType}
+}
+
+func backup(dbpath string) {
+	now := time.Now()
+	newpath := fmt.Sprintf("%s.%d", dbpath, now.Unix())
+	os.Rename(dbpath, newpath)
+}
+
+func NewCacheDBWithPath(cType CacheType, dbpath string) (CacheDB, error) {
+	if dbpath == "" {
+		dbpath = findCacheDBPath()
 	}
-	fp, err := os.Open(cc.path)
+	normalizedCachePath := normalizeCachePath(dbpath)
+	switch cType {
+	case NewCache:
+		backup(normalizedCachePath)
+		return newDefaultCacheDB(normalizedCachePath, cType), nil
+	default:
+		fallthrough
+	case MemoryCache:
+		return newMemoryCacheDB(MemoryCache), nil
+	case RefOnlyCache:
+		defaultDB, err := loadDefaultCacheDB(normalizedCachePath)
+		return &memoryCacheDB{db: defaultDB.DB, cType: RefOnlyCache}, err
+	case DefaultCache:
+		return loadDefaultCacheDB(normalizedCachePath)
+	}
+}
+
+func loadDefaultCacheDB(path string) (*defaultCacheDB, error) {
+	logger.Debugf("existFile(%s): %v", path, existFile(path))
+	if !existFile(path) {
+		return &defaultCacheDB{path: path, DB: map[string]*Project{}, cType: DefaultCache}, nil
+	}
+	fp, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 	defer fp.Close()
-	return loadImpl(cc, fp)
+	return loadImpl(path, fp)
 }
 
-func loadImpl(cc *CacheContext, reader io.Reader) (*defaultCacheDB, error) {
+func loadImpl(path string, reader io.Reader) (*defaultCacheDB, error) {
 	data, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
-	cacheDB := &defaultCacheDB{context: cc, DB: map[string]*Project{}}
+	cacheDB := &defaultCacheDB{path: path, DB: map[string]*Project{}}
 	if err := json.Unmarshal(data, cacheDB); err != nil {
 		return nil, err
 	}
@@ -187,7 +159,12 @@ func loadImpl(cc *CacheContext, reader io.Reader) (*defaultCacheDB, error) {
 }
 
 type memoryCacheDB struct {
-	db map[string]*Project
+	cType CacheType
+	db    map[string]*Project
+}
+
+func (ncdb *memoryCacheDB) Type() CacheType {
+	return ncdb.cType
 }
 
 func (ncdb *memoryCacheDB) Find(projectName string) (*Project, bool) {
@@ -215,9 +192,25 @@ func (ncdb *memoryCacheDB) Store() error {
 	return nil
 }
 
+func (ncdb *memoryCacheDB) Dump(writer io.Writer) error {
+	logger.Debug("memoryCacheDB does not support Dump")
+	return nil
+}
+
+func (ncdb *memoryCacheDB) Clear() error {
+	logger.Debug("clear memoryCacheDB")
+	ncdb.db = map[string]*Project{}
+	return nil
+}
+
 type defaultCacheDB struct {
-	context *CacheContext       `json:"-"`
-	DB      map[string]*Project `json:"cachedb"`
+	cType CacheType           `json:"-"`
+	path  string              `json:"-"`
+	DB    map[string]*Project `json:"cachedb"`
+}
+
+func (ddb *defaultCacheDB) Type() CacheType {
+	return ddb.cType
 }
 
 func (ddb *defaultCacheDB) Find(projectName string) (*Project, bool) {
@@ -225,7 +218,7 @@ func (ddb *defaultCacheDB) Find(projectName string) (*Project, bool) {
 	if ok {
 		logger.Infof("Cache found(%s: %v)", projectName, project)
 		if project.context == nil {
-			project.context = ddb.context
+			project.context = ddb
 		}
 	}
 	return project, ok
@@ -247,24 +240,32 @@ func mkdirs(path string) {
 	os.MkdirAll(filepath.Dir(path), 0755)
 }
 
+func (ddb *defaultCacheDB) Clear() error {
+	logger.Infof("defaultCacheDB clear database")
+	ddb.DB = map[string]*Project{}
+	return nil
+}
+
 func (ddb *defaultCacheDB) Store() error {
-	mkdirs(ddb.context.path)
-	writer, err := os.OpenFile(ddb.context.path, os.O_CREATE|os.O_WRONLY, 0644)
+	mkdirs(ddb.path)
+	writer, err := os.OpenFile(ddb.path, os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return err
 	}
 	defer writer.Close()
-	return storeImpl(writer, ddb)
+	return ddb.Dump(writer)
 }
-
-func storeImpl(writer io.Writer, ddb *defaultCacheDB) error {
+func (ddb *defaultCacheDB) Dump(writer io.Writer) error {
 	bytes, err := json.Marshal(ddb)
 	if err != nil {
 		return err
 	}
 	length, err := writer.Write(bytes)
+	if err != nil {
+		return err
+	}
 	if length != len(bytes) {
-		return fmt.Errorf("cannot write fully data")
+		return fmt.Errorf("cannot write fully data (write %d (%d) bytes)", length, len(bytes))
 	}
 	return nil
 }
