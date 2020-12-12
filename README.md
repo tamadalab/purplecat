@@ -152,7 +152,21 @@ $ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml
 
 ## :bathtub: Rest API
 
-`purplecat` supports Rest API.
+Purplecat provides REST API server as `pcrserver`.
+
+```sh
+pcrserver [OPTIONS]
+OPTIONS
+    -c, --cache-type <TYPE>        specifies the cache type. (default: default).
+                                   Available values are: default, ref-only, newdb and memory.
+        --cachedb-path <DBPATH>    specifies the cache database path
+                                   (default: ~/.config/purplecat/cachedb.json).
+    -l, --log-level <LOGLEVEL>     specifies the log level. (default: WARN).
+                                   Available values are: DEBUG, INFO, WARN, and FATAL
+    -p, --port <PORT>              specifies the port number, default is 8080.
+
+    -h, --help                     print this message.
+```
 
 ### End points
 
