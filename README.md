@@ -15,7 +15,7 @@ I see the dependent libraries and their licenses!
 We develop `purplecat` for detecting the license conflicts.
 For this, `purplecat` finds the dependent libraries and their licenses.
 
-## :runner: Usage 
+## :runner: Usage
 
 ```sh
 $ purplecat -h
@@ -25,7 +25,7 @@ OPTIONS
     -c, --cache-type <TYPE>        specifies the cache type. (default: default).
                                    Available values are: default, ref-only, newdb and memory.
         --cachedb-path <DBPATH>    specifies the cache database path
-                                   (default: ~/.config/purplecat/cachedb.json). 
+                                   (default: ~/.config/purplecat/cachedb.json).
     -d, --depth <DEPTH>            specifies the depth for parsing (default: 1)
     -f, --format <FORMAT>          specifies the result format. Default is 'markdown'.
                                    Available values are: CSV, JSON, YAML, XML, and Markdown.
@@ -41,7 +41,8 @@ BUILD_FILE
     build file of the project for extracting dependent libraries and their licenses
 
 purplecat support the projects using the following build tools.
-    * Maven 3 (pom.xml)```
+    * Maven 3 (pom.xml)
+```
 
 ### Resultant Format
 
@@ -149,6 +150,42 @@ license-name: BSD
 $ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml
 ```
 
+## :bathtub: Rest API
+
+`purplecat` supports Rest API.
+
+### End points
+
+#### `/purplecat/licenses`
+
+* `GET`
+    * run purplecat by giving build file.
+    * Query params
+        * `target` (required)
+            * specifies the target build file url.
+        * `depth`
+            * specifies the depth of the parsing.
+    * Status Codes
+        * 200 OK
+            * provides license data of the build files as json format.
+        * 404 Not found
+            * specified build file not found.
+        * 500 Error
+            * parsing error.
+
+#### `/purplecat/caches`
+
+* `GET`
+    * getting the whole cached data.
+    * Status Codes
+        * 200 OK
+           * provides cache data as json format.
+* `DELETE`
+    * delete cache data.
+        * 200 OK
+            * always returns this code.
+
+
 ## :anchor: Install
 
 ### :beer: Homebrew
@@ -180,9 +217,9 @@ $ make
 
 This license permits
 
-- :+1: Commercial use, 
-- :+1: Modification, 
-- :+1: Distribution, and 
+- :+1: Commercial use,
+- :+1: Modification,
+- :+1: Distribution, and
 - :+1: Private use.
 
 ### :jack_o_lantern: Logo
@@ -201,4 +238,3 @@ The purple cat is the most favorit character of her.
 ### :woman_office_worker: Developers :man_office_worker:
 
 * [Haruaki TAMADA](https://github.com/tamada)
-

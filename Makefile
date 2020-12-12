@@ -14,7 +14,7 @@ update_version:
 	done
 	@sed 's/ARG version=".*"/ARG version="${VERSION}"/g' Dockerfile > a ; mv a Dockerfile
 	@sed 's/const Version = .*/const Version = "${VERSION}"/g' version.go > a ; mv a version.go
-	@echo "Replace version to \"${VERSION}\""	
+	@echo "Replace version to \"${VERSION}\""
 
 start:
 	make -C site start
@@ -30,6 +30,9 @@ test: setup update_version
 
 build:
 	$(GO) build -o purplecat -v cmd/purplecat/main.go
+
+build_server:
+	$(GO) build -o purplecats -v cmd/server/main.go
 
 define _createDist
 	mkdir -p dist/$(1)_$(2)/$(DIST)/bin
