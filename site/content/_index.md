@@ -11,7 +11,8 @@ draft: false
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.3.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.3.0)
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
+[![Heroku-Deployed](https://img.shields.io/badge/Heroku-Deployed-green?logo=Heroku)](https://afternoon-wave-39227.herokuapp.com/purplecat/)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.0-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 # :cat: purplecat
 

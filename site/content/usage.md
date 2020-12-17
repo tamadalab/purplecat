@@ -133,7 +133,7 @@ license-name: BSD
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.2.0-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 * `tamadalab/purplecat`
     * `0.3.0`, `latest`
@@ -141,8 +141,8 @@ license-name: BSD
     * `0.1.0`
 
 ```sh
-$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml # <- CLI Mode
-$ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat tamadalab/purplecat --server --port 8080 # <- Server Mode
+$ docker run -v /target/project/dir:/home/purplecat ghcr.io/tamadalab/purplecat pom.xml # <- CLI Mode
+$ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat ghcr.io/tamadalab/purplecat --server --port 8080 # <- Server Mode
 ```
 
 ## :bathtub: Rest API

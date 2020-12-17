@@ -17,3 +17,4 @@ ENV HOME="/home/purplecat"
 WORKDIR /home/purplecat
 USER purplecat
 ENTRYPOINT [ "/opt/purplecat/bin/purplecat" ]
+# CMD /opt/purplecat/bin/purplecat --server --port=$PORT
