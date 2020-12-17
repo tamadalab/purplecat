@@ -149,7 +149,7 @@ license-name: BSD
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.0-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 * `tamadalab/purplecat`
     * `0.3.0`, `latest`
