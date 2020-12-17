@@ -6,6 +6,25 @@ import (
 	"testing"
 )
 
+func TestLogLevel(t *testing.T) {
+	testdata := []struct {
+		giveLevel string
+		wontLevel Level
+	}{
+		{"warn", WARN},
+		{"info", INFO},
+		{"Debug", DEBUG},
+		{"FATAL", FATAL},
+		{"hoge", WARN},
+	}
+	for _, td := range testdata {
+		gotLevel := LogLevel(td.giveLevel)
+		if gotLevel != td.wontLevel {
+			t.Errorf(`LogLevel("%s") did not match wont %d, got %d`, td.giveLevel, td.wontLevel, gotLevel)
+		}
+	}
+}
+
 func TestLogf(t *testing.T) {
 	testdata := []struct {
 		giveLevel    Level
@@ -103,5 +122,8 @@ func TestStringer(t *testing.T) {
 	}
 	if FATAL.String() != "FATAL" {
 		t.Errorf("DEBUG.String() did not match, wont FATAL, got %s", FATAL.String())
+	}
+	if Level(-1).String() != "UNKNOWN" {
+		t.Errorf("UNKNOWN.String() did not match, wont UNKNOWN, got %s", Level(-1).String())
 	}
 }

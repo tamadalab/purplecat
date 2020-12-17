@@ -10,7 +10,7 @@ draft: false
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamadalab/purplecat)](https://goreportcard.com/report/github.com/tamadalab/purplecat)
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.2.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.2.0)
+[![Version](https://img.shields.io/badge/Version-0.3.0-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.3.0)
 [![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&style=social)](https://hub.docker.com/r/tamadalab/purplecat)
 
 # :cat: purplecat
@@ -39,10 +39,11 @@ $ make
 
 ### Requirements
 
+* [github.com/antchfx/htmlquery](https://github.com/antchfx/htmlquery)
 * [github.com/antchfx/xmlquery](https://github.com/antchfx/xmlquery)
 * [github.com/asaskevich/govalidator](https://github.com/asaskevich/govalidator)
 * [github.com/go-resty/resty/v2](https://github.com/go-resty/resty)
+* [github.com/gorilla/mux](https://github.com/gorilla/mux)
 * [github.com/mitchellh/go-homedir](https://github.com/mitchellh/go-homedir)
 * [github.com/spf13/pflag](https://github.com/spf13/pflag)
-
-
+* [golang.org/pkg/net/http](https://golang.org/pkg/net/http/)
