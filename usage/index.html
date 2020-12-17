@@ -64,22 +64,30 @@
     
   <h1>🏃‍♂️ Usage</h1>
   <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat -h
-purplecat version 0.2.0
-purplecat <span style="color:#666">[</span>OPTIONS<span style="color:#666">]</span> &lt;PROJECTs...|BUILD_FILEs...&gt;
-OPTIONS
+purplecat version 0.3.0
+purplecat <span style="color:#666">[</span>COMMON_OPTIONS<span style="color:#666">]</span> <span style="color:#666">[</span>CLI_MODE_OPTIONS<span style="color:#666">]</span> <span style="color:#666">[</span>SERVER_MODE_OPTIONS<span style="color:#666">]</span> &lt;PROJECTs...|BUILD_FILEs...&gt;
+COMMON_OPTIONS
     -c, --cache-type &lt;TYPE&gt;        specifies the cache type. <span style="color:#666">(</span>default: default<span style="color:#666">)</span>.
                                    Available values are: default, ref-only, newdb and memory.
         --cachedb-path &lt;DBPATH&gt;    specifies the cache database path
-                                   <span style="color:#666">(</span>default: ~/.config/purplecat/cachedb.json<span style="color:#666">)</span>. 
+                                   <span style="color:#666">(</span>default: ~/.config/purplecat/cachedb.json<span style="color:#666">)</span>.
+    -l, --log-level &lt;LOGLEVEL&gt;     specifies the log level. <span style="color:#666">(</span>default: WARN<span style="color:#666">)</span>.
+                                   Available values are: DEBUG, INFO, WARN, and FATAL
+    -h, --help                     prints this message.
+
+CLI_MODE_OPTIONS
     -d, --depth &lt;DEPTH&gt;            specifies the depth <span style="color:#008000;font-weight:bold">for</span> parsing <span style="color:#666">(</span>default: 1<span style="color:#666">)</span>
     -f, --format &lt;FORMAT&gt;          specifies the result format. Default is <span style="color:#ba2121">&#39;markdown&#39;</span>.
                                    Available values are: CSV, JSON, YAML, XML, and Markdown.
-    -l, --log-level &lt;LOGLEVEL&gt;     specifies the log level. <span style="color:#666">(</span>default: WARN<span style="color:#666">)</span>.
-                                   Available values are: DEBUG, INFO, WARN, and FATAL
     -o, --output &lt;FILE&gt;            specifies the destination file <span style="color:#666">(</span>default: STDOUT<span style="color:#666">)</span>.
     -N, --offline                  offline mode <span style="color:#666">(</span>no network access<span style="color:#666">)</span>.
 
-    -h, --help                     prints this message.
+SERVER_MODE_OPTIONS
+    -p, --port &lt;PORT&gt;              specifies the port number of REST API server. Default is 8080.
+                                   If <span style="color:#ba2121">&#39;--server&#39;</span> option did not specified, purplecat ignores this option.
+    -s, --server                   starts REST API server. With this option, purplecat ignores
+                                   CLI_MODE_OPTIONS and arguments.
+
 PROJECT
     target project <span style="color:#008000;font-weight:bold">for</span> extracting dependent libraries and their licenses.
 BUILD_FILE
@@ -87,7 +95,7 @@ BUILD_FILE
 
 purplecat support the projects using the following build tools.
     * Maven <span style="color:#666">3</span> <span style="color:#666">(</span>pom.xml<span style="color:#666">)</span>
-</code></pre></div><h3 id="resultant-format">Resultant Format</h3>
+</code></pre></div><h3 id="resultant-format-in-cli-mode">Resultant Format in CLI mode</h3>
 <h4 id="csv">CSV</h4>
 <pre><code class="language-csv" data-lang="csv">project-name,license-name,parent
 project1,[&quot;Apache 2.0&quot;],
@@ -157,13 +165,89 @@ license<span style="">-</span>name<span style="">:</span> BSD
 <ul>
 <li><code>tamadalab/purplecat</code>
 <ul>
-<li><code>0.2.0</code>, <code>latest</code></li>
+<li><code>0.3.0</code>, <code>latest</code></li>
+<li><code>0.2.0</code></li>
 <li><code>0.1.0</code></li>
 </ul>
 </li>
 </ul>
-<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat:latest pom.xml
-</code></pre></div>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml <span style="color:#408080;font-style:italic"># &lt;- CLI Mode</span>
+$ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat tamadalab/purplecat --server --port <span style="color:#666">8080</span> <span style="color:#408080;font-style:italic"># &lt;- Server Mode</span>
+</code></pre></div><h2 id="-rest-api">🛁 Rest API</h2>
+<p>Purplecat provides REST API server as specifying option <code>'-s'</code> or <code>'--server'</code> to <code>purplecat</code> command.</p>
+<h3 id="end-points">End points</h3>
+<h4 id="purplecatapilicenses"><code>/purplecat/api/licenses</code></h4>
+<ul>
+<li><code>GET</code>
+<ul>
+<li>run purplecat by giving build file and returns the result as JSON format.</li>
+<li>Query params
+<ul>
+<li><code>target</code> (required)
+<ul>
+<li>specifies the target build file url.</li>
+</ul>
+</li>
+<li><code>depth</code>
+<ul>
+<li>specifies the depth of the parsing. Default is 1.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Status Codes
+<ul>
+<li>200 OK
+<ul>
+<li>provides license data of the build files as json format.</li>
+</ul>
+</li>
+<li>404 Not found
+<ul>
+<li>specified build file not found.</li>
+</ul>
+</li>
+<li>500 Error
+<ul>
+<li>parsing error.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="purplecatapicaches"><code>/purplecat/api/caches</code></h4>
+<ul>
+<li><code>GET</code>
+<ul>
+<li>getting the whole cached data.</li>
+<li>Status Codes
+<ul>
+<li>200 OK
+<ul>
+<li>provides cache data as json format.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>DELETE</code>
+<ul>
+<li>delete cache data.
+<ul>
+<li>200 OK
+<ul>
+<li>always returns this code.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
 
     <footer class="site-footer">
   <span class="site-footer-credits">
