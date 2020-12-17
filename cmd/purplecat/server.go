@@ -60,15 +60,16 @@ func runPurplecat(r *http.Request, context *purplecat.Context) (*purplecat.Proje
 	return parser.Parse(path)
 }
 
-func createContext(r *http.Request, cache *purplecat.CacheContext) *purplecat.Context {
+func createContext(r *http.Request, cache purplecat.CacheDB) *purplecat.Context {
 	depth := parseDepth(r)
 	context := purplecat.NewContext(false, "json", depth)
 	context.Cache = cache
 	return context
 }
 
-func runPurplecatHandler(cache *purplecat.CacheContext) func(http.ResponseWriter, *http.Request) {
+func runPurplecatHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Infof("GET /purplecat/licenses")
 		if err := r.ParseForm(); err != nil {
 			respondError(w, err)
 			return
@@ -84,55 +85,70 @@ func runPurplecatHandler(cache *purplecat.CacheContext) func(http.ResponseWriter
 	}
 }
 
-func clearCacheHandler(cache *purplecat.CacheContext) func(http.ResponseWriter, *http.Request) {
+func clearCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Warnf("DELETE /purplecat/caches: not implement yet.")
+		logger.Infof("DELETE caches")
+		cache.Clear()
+		data, _ := json.Marshal(map[string]string{"message": "ok"})
+		respond(w, 200, data)
 	}
 }
 
-func wholeCacheHandler(cache *purplecat.CacheContext) func(http.ResponseWriter, *http.Request) {
+func wholeCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Warnf("GET /purplecat/caches: not implement yet.")
+		logger.Infof("GET caches")
+		buffer := bytes.NewBuffer([]byte{})
+		cache.Dump(buffer)
+		respond(w, 200, buffer.Bytes())
 	}
 }
 
-func createRestAPI(cache *purplecat.CacheContext) *mux.Router {
+func wrapHandler(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		logger.Infof("request uri: %s", r.RequestURI)
+		h.ServeHTTP(w, r)
+	}
+}
+
+func createFileServer() http.Handler {
+	dirs := []string{
+		"docs",
+		"/opt/purplecat/docs",
+		"/usr/local/opt/purplecat/docs",
+	}
+	for _, dir := range dirs {
+		if existDir(dir) {
+			logger.Debugf("serve %s", dir)
+			return wrapHandler(http.StripPrefix("/purplecat/", http.FileServer(http.Dir(dir))))
+		}
+	}
+	return nil
+}
+
+func existDir(dir string) bool {
+	stat, err := os.Stat(dir)
+	return err == nil && stat.IsDir()
+}
+
+func createRestAPI(cache purplecat.CacheDB) *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/purplecat/licenses", runPurplecatHandler(cache)).Methods("GET")
-	router.HandleFunc("/purplecat/caches", clearCacheHandler(cache)).Methods("DELETE")
-	router.HandleFunc("/purplecat/caches", wholeCacheHandler(cache)).Methods("GET")
+	subRouter := router.PathPrefix("/purplecat/api/").Subrouter()
+	subRouter.HandleFunc("/licenses", runPurplecatHandler(cache)).Methods("GET")
+	subRouter.HandleFunc("/caches", clearCacheHandler(cache)).Methods("DELETE")
+	subRouter.HandleFunc("/caches", wholeCacheHandler(cache)).Methods("GET")
+	router.PathPrefix("/purplecat/").Handler(createFileServer())
 	return router
 }
 
-func createCache() (*purplecat.CacheContext, error) {
-	cache, err := purplecat.NewCacheContext(purplecat.DefaultCache)
-	if err != nil {
-		return nil, err
-	}
-	if err := cache.Init(); err != nil {
-		return nil, err
-	}
-	return cache, nil
-}
-
-func startServer(router *mux.Router) int {
+func startServer(router *mux.Router, opts *serverOpts) int {
+	portString := fmt.Sprintf(":%d", opts.port)
 	logger.SetLevel(logger.INFO)
-	logger.Infof("Listen server...")
-	logger.Fatalf("server shutdown: %s", http.ListenAndServe(":8080", router))
+	logger.Infof("Listen server at port %d...", opts.port)
+	logger.Fatalf("server shutdown: %s", http.ListenAndServe(portString, router))
 	return 0
 }
 
-func goMain(args []string) int {
-	cache, err := createCache()
-	if err != nil {
-		logger.Warnf("cache error: %s", err.Error())
-		return 1
-	}
+func (server *serverOpts) StartServer(common *commonOpts, cache purplecat.CacheDB) int {
 	router := createRestAPI(cache)
-	return startServer(router)
-}
-
-func main() {
-	status := goMain(os.Args)
-	os.Exit(status)
+	return startServer(router, server)
 }

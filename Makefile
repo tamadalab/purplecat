@@ -1,6 +1,6 @@
 GO := go
 NAME := purplecat
-VERSION := 0.2.0
+VERSION := 0.3.0
 DIST := $(NAME)-$(VERSION)
 
 all: test build
@@ -29,20 +29,17 @@ test: setup update_version
 	$(GO) test -covermode=count -coverprofile=coverage.out $$(go list ./...)
 
 build:
-	$(GO) build -o purplecat -v cmd/purplecat/main.go
-
-build_server:
-	$(GO) build -o purplecats -v cmd/server/main.go
+	$(GO) build -o purplecat -v cmd/purplecat/main.go cmd/purplecat/server.go
 
 define _createDist
 	mkdir -p dist/$(1)_$(2)/$(DIST)/bin
-	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/bin/purplecat$(3) cmd/purplecat/main.go
+	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/bin/purplecat$(3) cmd/purplecat/main.go cmd/purplecat/server.go
 	cp -r README.md LICENSE completions dist/$(1)_$(2)/$(DIST)
 	cp -r site/public dist/$(1)_$(2)/$(DIST)/docs
 	tar cfz dist/$(DIST)_$(1)_$(2).tar.gz -C dist/$(1)_$(2) $(DIST)
 endef
 
-dist: build
+dist: build www
 	@$(call _createDist,darwin,amd64,)
 	@$(call _createDist,windows,amd64,.exe)
 	@$(call _createDist,windows,386,.exe)
