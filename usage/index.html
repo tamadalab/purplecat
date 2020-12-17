@@ -161,7 +161,7 @@ license<span style="">-</span>name<span style="">:</span> BSD
     <span style="color:#008000;font-weight:bold">*</span> dependent-project1: [&#34;Apache 2.0&#34;]
     <span style="color:#008000;font-weight:bold">*</span> dependent-project2: [&#34;BSD&#34;]
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
-<p><a href="https://hub.docker.com/r/tamadalab/purplecat"><img src="https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.1.0-blue?logo=docker&amp;style=social" alt="Docker"></a></p>
+<p><a href="https://github.com/orgs/tamadalab/packages/container/package/purplecat"><img src="https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.2.0-blue?logo=docker" alt="Docker"></a></p>
 <ul>
 <li><code>tamadalab/purplecat</code>
 <ul>
@@ -171,8 +171,8 @@ license<span style="">-</span>name<span style="">:</span> BSD
 </ul>
 </li>
 </ul>
-<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/purplecat tamadalab/purplecat pom.xml <span style="color:#408080;font-style:italic"># &lt;- CLI Mode</span>
-$ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat tamadalab/purplecat --server --port <span style="color:#666">8080</span> <span style="color:#408080;font-style:italic"># &lt;- Server Mode</span>
+<div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ docker run -v /target/project/dir:/home/purplecat ghcr.io/tamadalab/purplecat pom.xml <span style="color:#408080;font-style:italic"># &lt;- CLI Mode</span>
+$ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat ghcr.io/tamadalab/purplecat --server --port <span style="color:#666">8080</span> <span style="color:#408080;font-style:italic"># &lt;- Server Mode</span>
 </code></pre></div><h2 id="-rest-api">🛁 Rest API</h2>
 <p>Purplecat provides REST API server as specifying option <code>'-s'</code> or <code>'--server'</code> to <code>purplecat</code> command.</p>
 <h3 id="end-points">End points</h3>
