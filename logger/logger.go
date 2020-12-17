@@ -25,7 +25,7 @@ func LogLevel(level string) Level {
 		return DEBUG
 	case "info":
 		return INFO
-	case "wan":
+	case "warn":
 		return WARN
 	case "fatal":
 		return FATAL

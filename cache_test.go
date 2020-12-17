@@ -2,8 +2,16 @@ package purplecat
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
+
+func TestDefaultCacheDBPath(t *testing.T) {
+	path := DefaultCacheDBPath()
+	if !strings.HasSuffix(path, "/.config/purplecat/cachedb.json") {
+		t.Errorf(`DefaultCacheDB did not match, wont suffix ".config/purplecat/cachedb.json", but got %s`, path)
+	}
+}
 
 func TestParseCacheType(t *testing.T) {
 	testdata := []struct {
@@ -33,6 +41,7 @@ func TestCacheTypeString(t *testing.T) {
 		{RefOnlyCache, "ref-only"},
 		{DefaultCache, "default"},
 		{NewCache, "newdb"},
+		{-1, "unknown"},
 	}
 	for _, td := range testdata {
 		gotString := td.giveType.String()
