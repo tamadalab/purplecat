@@ -17,7 +17,7 @@
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
       <guid>https://tamadalab.github.io/purplecat/usage/</guid>
-      <description>$ purplecat -h purplecat version 0.3.0 purplecat [COMMON_OPTIONS] [CLI_MODE_OPTIONS] [SERVER_MODE_OPTIONS] &amp;lt;PROJECTs...|BUILD_FILEs...&amp;gt; COMMON_OPTIONS -c, --cache-type &amp;lt;TYPE&amp;gt; specifies the cache type. (default: default). Available values are: default, ref-only, newdb and memory. --cachedb-path &amp;lt;DBPATH&amp;gt; specifies the cache database path (default: ~/.config/purplecat/cachedb.json). -l, --log-level &amp;lt;LOGLEVEL&amp;gt; specifies the log level. (default: WARN). Available values are: DEBUG, INFO, WARN, and FATAL -h, --help prints this message. CLI_MODE_OPTIONS -d, --depth &amp;lt;DEPTH&amp;gt; specifies the depth for parsing (default: 1) -f, --format &amp;lt;FORMAT&amp;gt; specifies the result format.</description>
+      <description>$ purplecat -h purplecat version 0.3.1 purplecat [COMMON_OPTIONS] [CLI_MODE_OPTIONS] [SERVER_MODE_OPTIONS] &amp;lt;PROJECTs...|BUILD_FILEs...&amp;gt; COMMON_OPTIONS -c, --cache-type &amp;lt;TYPE&amp;gt; specifies the cache type. (default: default). Available values are: default, ref-only, newdb and memory. --cachedb-path &amp;lt;DBPATH&amp;gt; specifies the cache database path (default: ~/.config/purplecat/cachedb.json). -l, --log-level &amp;lt;LOGLEVEL&amp;gt; specifies the log level. (default: WARN). Available values are: DEBUG, INFO, WARN, and FATAL -h, --help prints this message. CLI_MODE_OPTIONS -d, --depth &amp;lt;DEPTH&amp;gt; specifies the depth for parsing (default: 1) -f, --format &amp;lt;FORMAT&amp;gt; specifies the result format.</description>
     </item>
     
     <item>
@@ -31,6 +31,15 @@ This license permits
  👍 Commercial use, 👍 Modification, 👍 Distribution, and 👍 Private use.  🎃 Logo This image comes from https://pixy.org/4693873/ (CC-0).
 📛 Project name come from? The project name come from the children book, titled &amp;ldquo;Brown Bear, Brown Bear, What do you see?&amp;rdquo; by Bill Martin, Jr. and Eric Carle.
 I read the book to my child many times by her request. The purple cat is the most favorit character of her.</description>
+    </item>
+    
+    <item>
+      <title>:surfer: Demo</title>
+      <link>https://tamadalab.github.io/purplecat/demo/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://tamadalab.github.io/purplecat/demo/</guid>
+      <description>       </description>
     </item>
     
   </channel>
