@@ -1,6 +1,6 @@
 GO := go
 NAME := purplecat
-VERSION := 0.3.0
+VERSION := 0.3.1
 DIST := $(NAME)-$(VERSION)
 
 all: test build
@@ -35,6 +35,7 @@ define _createDist
 	mkdir -p dist/$(1)_$(2)/$(DIST)/bin
 	GOOS=$1 GOARCH=$2 go build -o dist/$(1)_$(2)/$(DIST)/bin/purplecat$(3) cmd/purplecat/main.go cmd/purplecat/server.go
 	cp -r README.md LICENSE completions dist/$(1)_$(2)/$(DIST)
+	rm -rf dist/$(1)_$(2)/$(DIST)/docs
 	cp -r site/public dist/$(1)_$(2)/$(DIST)/docs
 	tar cfz dist/$(DIST)_$(1)_$(2).tar.gz -C dist/$(1)_$(2) $(DIST)
 endef

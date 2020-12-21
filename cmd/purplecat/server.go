@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 	"os"
 	"strconv"
 
@@ -69,11 +68,8 @@ func createContext(r *http.Request, cache purplecat.CacheDB) *purplecat.Context 
 }
 
 func updateHeader(w http.ResponseWriter, r *http.Request) {
-	value, err := url.Parse(r.Referer())
-	if err != nil {
-		return
-	}
-	w.Header().Set("Access-Control-Allow-Origin", value.Host)
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,DELETE")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 }
 

@@ -1,6 +1,6 @@
 ---
 title: ":surfer: Demo"
-draft: true
+draft: false
 ---
 
 {{< demo >}}

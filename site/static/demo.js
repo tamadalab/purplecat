@@ -1,6 +1,6 @@
 'use strict'
 
-const heroku = "https://afternoon-wave-39227.herokuapp.com/purplecat/"
+const heroku = "https://afternoon-wave-39227.herokuapp.com/purplecat/api/"
 
 const availableUrl = (urlString) => {
     const url = new URL(urlString)
@@ -44,15 +44,19 @@ const showResult = (jsonString) => {
     const json = JSON.parse(jsonString)
     const str = JSON.stringify(json, null, "  ")
     const area = document.getElementById('resultArea')
-    area.innerText(str)
+    console.log(str)
+    area.innerText = str
 }
 
 const executePurplecat = (e) => {
     const url = document.getElementById("pomurl").value
     const request = new XMLHttpRequest()
     request.onreadystatechange = () => {
+        console.log(`readyState: ${request.readyState}`)
         if (request.readyState == 4) {
+            console.log(`done: http status: ${request.status}`)
             if (request.status == 200) {
+                showMessage(`GET license data from ${url}`)
                 showResult(request.responseText)
             } else {
                 showError(request.responseText)
@@ -61,6 +65,7 @@ const executePurplecat = (e) => {
             showMessage("running purplecat...")
         }
     }
+    console.log(`${heroku}licenses?target=${url}`)
     request.open("GET", `${heroku}licenses?target=${url}`, true)
     request.send(null)
 }
