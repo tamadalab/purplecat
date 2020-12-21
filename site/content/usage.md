@@ -4,7 +4,7 @@ title: ":runner: Usage"
 
 ```sh
 $ purplecat -h
-purplecat version 0.3.0
+purplecat version 0.3.1
 purplecat [COMMON_OPTIONS] [CLI_MODE_OPTIONS] [SERVER_MODE_OPTIONS] <PROJECTs...|BUILD_FILEs...>
 COMMON_OPTIONS
     -c, --cache-type <TYPE>        specifies the cache type. (default: default).
@@ -133,10 +133,11 @@ license-name: BSD
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.2.0-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
+[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.1-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 * `tamadalab/purplecat`
-    * `0.3.0`, `latest`
+    * `0.3.1`, `latest`
+    * `0.3.0`
     * `0.2.0`
     * `0.1.0`
 
