@@ -28,7 +28,10 @@ pygmentsStyle = "pygments"
     url = "/usage"
     weight = 2
   [[menu.nav]]
+    name = ":surfer: Demo"
+    url = "/demo"
+    weight = 3
+  [[menu.nav]]
     name = ":smile: About"
     url = "/about"
     weight = 5
-
