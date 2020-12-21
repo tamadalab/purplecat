@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 
@@ -67,6 +68,15 @@ func createContext(r *http.Request, cache purplecat.CacheDB) *purplecat.Context 
 	return context
 }
 
+func updateHeader(w http.ResponseWriter, r *http.Request) {
+	value, err := url.Parse(r.Referer())
+	if err != nil {
+		return
+	}
+	w.Header().Set("Access-Control-Allow-Origin", value.Host)
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+}
+
 func runPurplecatHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		logger.Infof("GET /purplecat/licenses")
@@ -79,6 +89,7 @@ func runPurplecatHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *htt
 		if err != nil {
 			respondError(w, err)
 		} else {
+			updateHeader(w, r)
 			respondJSON(w, context, project)
 			cache.Store()
 		}
