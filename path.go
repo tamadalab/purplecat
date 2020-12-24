@@ -18,7 +18,7 @@ import (
 type Path struct {
 	Path      string
 	url       *url.URL
-	supporter pathSupporter
+	supporter PathSupporter
 }
 
 // NewPath creates an pointer of Path represents the given location.
@@ -28,7 +28,11 @@ func NewPath(path string) *Path {
 			return &Path{Path: path, url: url, supporter: &urlPathSupporter{}}
 		}
 	}
-	return &Path{Path: path, supporter: &localFilePathSupporter{}}
+	return NewPathWithSupporter(path, &localFilePathSupporter{})
+}
+
+func NewPathWithSupporter(path string, supporter PathSupporter) *Path {
+	return &Path{Path: path, supporter: supporter}
 }
 
 // Exists checks existtence of the receiver path.
@@ -71,7 +75,7 @@ func (path *Path) Dir() *Path {
 	return NewPath(path.supporter.Dir(path))
 }
 
-type pathSupporter interface {
+type PathSupporter interface {
 	Base(path *Path) string
 	Join(base *Path, append string) string
 	Dir(path *Path) string

@@ -4,9 +4,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamadalab/purplecat)](https://goreportcard.com/report/github.com/tamadalab/purplecat)
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.3.1-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.3.1)
+[![Version](https://img.shields.io/badge/Version-0.3.2-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.3.2)
 [![Heroku-Deployed](https://img.shields.io/badge/Heroku-Deployed-green?logo=Heroku)](https://afternoon-wave-39227.herokuapp.com/purplecat/)
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.1-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftamadalab%2Fpurplecat%3A0.3.2-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 # :cat: purplecat
 
@@ -20,7 +20,7 @@ For this, `purplecat` finds the dependent libraries and their licenses.
 
 ```sh
 $ purplecat -h
-purplecat version 0.3.1
+purplecat version 0.3.2
 purplecat [COMMON_OPTIONS] [CLI_MODE_OPTIONS] [SERVER_MODE_OPTIONS] <PROJECTs...|BUILD_FILEs...>
 COMMON_OPTIONS
     -c, --cache-type <TYPE>        specifies the cache type. (default: default).
@@ -149,10 +149,11 @@ license-name: BSD
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.1-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftamadalab%2Fpurplecat%3A0.3.2-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 * `tamadalab/purplecat`
-    * `0.3.1`, `latest`
+    * `0.3.2`, `latest`
+    * `0.3.1`
     * `0.3.0`
     * `0.2.0`
     * `0.1.0`
@@ -173,12 +174,26 @@ Purplecat provides REST API server as specifying option `'-s'` or `'--server'` t
 #### `/purplecat/api/licenses`
 
 * `GET`
-    * run purplecat by giving build file and returns the result as JSON format.
+    * run purplecat with pom url by query param and returns the result as JSON format.
     * Query params
         * `target` (required)
             * specifies the target build file url.
         * `depth`
             * specifies the depth of the parsing. Default is 1.
+    * Status Codes
+        * 200 OK
+            * provides license data of the build files as json format.
+        * 404 Not found
+            * specified build file not found.
+        * 500 Error
+            * parsing error.
+* `POST`
+    * run purplecat with pom data from request body and returns the result as JSON format.
+    * Query params
+        * `depth`
+            * specifies the depth of the parsing. Default is 1.
+    * Requst body
+        * plain `pom.xml` data.
     * Status Codes
         * 200 OK
             * provides license data of the build files as json format.

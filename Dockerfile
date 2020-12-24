@@ -1,5 +1,5 @@
 FROM alpine:3.10.1
-ARG version="0.3.1"
+ARG version="0.3.2"
 LABEL maintainer="Haruaki TAMADA" \
     description="Purple cat, Purple cat, What do you see? I see the dependent libraries and their licenses!"
 

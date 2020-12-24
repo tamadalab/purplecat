@@ -17,18 +17,22 @@ type gradleParser struct {
 	context *Context
 }
 
-// GenerateParser creates and returns the instance of Parser for given path.
-func (context *Context) GenerateParser(givenPath string) (Parser, error) {
+func (context *Context) GenerateParser(path *Path) (Parser, error) {
 	parsers := []Parser{
 		&mavenParser{context: context},
 		&goModParser{context: context},
 		// {"build.gradle", &GradleParser{context: context}},
 	}
-	path := NewPath(givenPath)
 	for _, parser := range parsers {
 		if parser.IsTarget(path, context) {
 			return parser, nil
 		}
 	}
-	return nil, fmt.Errorf("%s: cannot parse the project", givenPath)
+	return nil, fmt.Errorf("%s: cannot parse the project", path.Path)
+}
+
+// GenerateParser2 creates and returns the instance of Parser for given path.
+func (context *Context) GenerateParser2(givenPath string) (Parser, error) {
+	path := NewPath(givenPath)
+	return context.GenerateParser(path)
 }
