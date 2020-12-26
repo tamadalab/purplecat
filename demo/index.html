@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script src="/livereload.js?port=1313&mindelay=10&v=2" data-no-instant defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -72,10 +72,11 @@
   <script src="/purplecat/demo.js"></script>
 
 <p>
-<input id="pomurl" size="50" type="text" placeholder="Input pom url in the maven repository"></input>
+    <div><span class="label">Pom File:</span><span><input type="file" id="pomfile"></input></span></div>
+    <div><span class="label">Pom URL:</span><span><input id="pomurl" size="50" type="text" placeholder="Input pom url in the maven repository"></input></span></div>
 </p><p>
-<input type="button" value="Run purplecat!" id="runButton"></input>
-<input type="button" value="Reset" id="resetButton"></input>
+    <input type="button" value="Run purplecat!" id="runButton"></input>
+    <input type="button" value="Reset" id="resetButton"></input>
 </p>
 <p id="message"></p>
 
@@ -91,7 +92,5 @@
 
   </section>
   
-  
-
 </body>
 </html>

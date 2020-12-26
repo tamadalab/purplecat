@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head><script src="/livereload.js?port=1313&mindelay=10&v=2" data-no-instant defer></script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -70,7 +70,7 @@
     
   <h1>🏃‍♂️ Usage</h1>
   <div class="highlight"><pre style=";-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ purplecat -h
-purplecat version 0.3.1
+purplecat version 0.3.2
 purplecat <span style="color:#666">[</span>COMMON_OPTIONS<span style="color:#666">]</span> <span style="color:#666">[</span>CLI_MODE_OPTIONS<span style="color:#666">]</span> <span style="color:#666">[</span>SERVER_MODE_OPTIONS<span style="color:#666">]</span> &lt;PROJECTs...|BUILD_FILEs...&gt;
 COMMON_OPTIONS
     -c, --cache-type &lt;TYPE&gt;        specifies the cache type. <span style="color:#666">(</span>default: default<span style="color:#666">)</span>.
@@ -167,11 +167,12 @@ license<span style="">-</span>name<span style="">:</span> BSD
     <span style="color:#008000;font-weight:bold">*</span> dependent-project1: [&#34;Apache 2.0&#34;]
     <span style="color:#008000;font-weight:bold">*</span> dependent-project2: [&#34;BSD&#34;]
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
-<p><a href="https://github.com/orgs/tamadalab/packages/container/package/purplecat"><img src="https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.1-blue?logo=docker" alt="Docker"></a></p>
+<p><a href="https://github.com/orgs/tamadalab/packages/container/package/purplecat"><img src="https://img.shields.io/badge/docker-ghcr.io%2Ftamadalab%2Fpurplecat%3A0.3.2-blue?logo=docker" alt="Docker"></a></p>
 <ul>
 <li><code>tamadalab/purplecat</code>
 <ul>
-<li><code>0.3.1</code>, <code>latest</code></li>
+<li><code>0.3.2</code>, <code>latest</code></li>
+<li><code>0.3.1</code></li>
 <li><code>0.3.0</code></li>
 <li><code>0.2.0</code></li>
 <li><code>0.1.0</code></li>
@@ -200,6 +201,44 @@ $ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat ghcr.io/tamadal
 <li>specifies the depth of the parsing. Default is 1.</li>
 </ul>
 </li>
+</ul>
+</li>
+<li>Status Codes
+<ul>
+<li>200 OK
+<ul>
+<li>provides license data of the build files as json format.</li>
+</ul>
+</li>
+<li>404 Not found
+<ul>
+<li>specified build file not found.</li>
+</ul>
+</li>
+<li>500 Error
+<ul>
+<li>parsing error.</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>POST</code>
+<ul>
+<li>run purplecat with pom data from request body and returns the result as JSON format.</li>
+<li>Query params
+<ul>
+<li><code>depth</code>
+<ul>
+<li>specifies the depth of the parsing. Default is 1.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Requst body
+<ul>
+<li>plain <code>pom.xml</code> data.</li>
 </ul>
 </li>
 <li>Status Codes
@@ -264,7 +303,5 @@ $ docker run -p 8080:8080 -v /target/project/dir:/home/purplecat ghcr.io/tamadal
 
   </section>
   
-  
-
 </body>
 </html>
