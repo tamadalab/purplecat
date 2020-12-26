@@ -82,6 +82,12 @@ func (fp *formPathSupporter) Close() error {
 }
 
 func runPurplecatByPost(w http.ResponseWriter, r *http.Request, context *purplecat.Context) (*purplecat.Project, error) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType == "" {
+		return nil, fmt.Errorf("Content-Type was not set in the request header")
+	} else if contentType != "application/xml" {
+		return nil, fmt.Errorf("Supported Content-Type is only \"application/xml\" in the current implementation")
+	}
 	data, err := ioutil.ReadAll(r.Body)
 	if err != nil && err != io.EOF {
 		return nil, err
@@ -117,7 +123,7 @@ func createContext(r *http.Request, cache purplecat.CacheDB) *purplecat.Context 
 
 func updateHeader(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET,DELETE,POST")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,DELETE,POST,OPTIONS")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 }
 
@@ -155,6 +161,15 @@ func clearCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.
 		data, _ := json.Marshal(map[string]string{"message": "ok"})
 		respond(w, 200, data)
 	}
+}
+
+func optionsHandler(w http.ResponseWriter, r *http.Request) {
+	logger.Infof("OPTIONS: %s", r.URL)
+	updateHeader(w, r)
+	w.Header().Set("Access-Control-Request-Method", "POST,GET,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "origin, accept, X-PINGOTHER, Content-Type")
+	w.WriteHeader(200)
+	w.Write([]byte{})
 }
 
 func wholeCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
@@ -198,8 +213,10 @@ func createRestAPI(cache purplecat.CacheDB) *mux.Router {
 	subRouter := router.PathPrefix("/purplecat/api/").Subrouter()
 	subRouter.HandleFunc("/licenses", runPurplecatGetHandler(cache)).Methods("GET")
 	subRouter.HandleFunc("/licenses", runPurplecatPostHandler(cache)).Methods("POST")
+	subRouter.HandleFunc("/licenses", optionsHandler).Methods("OPTIONS")
 	subRouter.HandleFunc("/caches", clearCacheHandler(cache)).Methods("DELETE")
 	subRouter.HandleFunc("/caches", wholeCacheHandler(cache)).Methods("GET")
+	subRouter.HandleFunc("/caches", optionsHandler).Methods("OPTIONS")
 	router.PathPrefix("/purplecat/").Handler(createFileServer())
 	return router
 }

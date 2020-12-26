@@ -8,7 +8,7 @@ RUN    adduser -D -h /home/purplecat purplecat \
     && apk update \
     && apk --no-cache add --update --virtual .builddeps curl tar \
     && curl -s -L https://github.com/tamadalab/purplecat/releases/download/v${version}/purplecat-${version}_linux_amd64.tar.gz -o /tmp/purplecat.tar.gz \
-#    && curl -s -L https://www.dropbox.com/s/4c0ctg24qampga5/purplecat-${version}_linux_amd64.tar.gz?dl=0 -o /tmp/purplecat.tar.gz \
+#    && curl -s -L https://www.dropbox.com/s/b87at7bjn87n191/purplecat-${version}_linux_amd64.tar.gz?dl=0 -o /tmp/purplecat.tar.gz \
     && tar xvfz /tmp/purplecat.tar.gz \
     && ln -s /opt/purplecat-${version} /opt/purplecat \
     && rm -rf /tmp/purplecat.tar.gz /opt/purplecat/{README.md,LICENSE,completions} \
