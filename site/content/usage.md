@@ -4,7 +4,7 @@ title: ":runner: Usage"
 
 ```sh
 $ purplecat -h
-purplecat version 0.3.1
+purplecat version 0.3.2
 purplecat [COMMON_OPTIONS] [CLI_MODE_OPTIONS] [SERVER_MODE_OPTIONS] <PROJECTs...|BUILD_FILEs...>
 COMMON_OPTIONS
     -c, --cache-type <TYPE>        specifies the cache type. (default: default).
@@ -133,10 +133,11 @@ license-name: BSD
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/docker-tamadalab%2Fpurplecat%3A0.3.1-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftamadalab%2Fpurplecat%3A0.3.2-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 * `tamadalab/purplecat`
-    * `0.3.1`, `latest`
+    * `0.3.2`, `latest`
+    * `0.3.1`
     * `0.3.0`
     * `0.2.0`
     * `0.1.0`
@@ -161,6 +162,20 @@ Purplecat provides REST API server as specifying option `'-s'` or `'--server'` t
             * specifies the target build file url.
         * `depth`
             * specifies the depth of the parsing. Default is 1.
+    * Status Codes
+        * 200 OK
+            * provides license data of the build files as json format.
+        * 404 Not found
+            * specified build file not found.
+        * 500 Error
+            * parsing error.
+* `POST`
+    * run purplecat with pom data from request body and returns the result as JSON format.
+    * Query params
+        * `depth`
+            * specifies the depth of the parsing. Default is 1.
+    * Requst body
+        * plain `pom.xml` data.
     * Status Codes
         * 200 OK
             * provides license data of the build files as json format.

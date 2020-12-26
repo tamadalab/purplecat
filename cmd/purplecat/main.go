@@ -192,11 +192,12 @@ func parseArgs(args []string) (*options, error) {
 }
 
 func performEach(projectPath string, context *purplecat.Context) (*purplecat.Project, error) {
-	parser, err := context.GenerateParser(projectPath)
+	path := purplecat.NewPath(projectPath)
+	parser, err := context.GenerateParser(path)
 	if err != nil {
 		return nil, err
 	}
-	return parser.Parse(purplecat.NewPath(projectPath))
+	return parser.Parse(path)
 }
 
 func createWriter(opts *options) (purplecat.Writer, error) {

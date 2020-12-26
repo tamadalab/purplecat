@@ -22,7 +22,7 @@ func TestGenerateParser(t *testing.T) {
 
 	context := NewContext(false, "json", 1)
 	for _, td := range testdata {
-		parser, err := context.GenerateParser(td.path)
+		parser, err := context.GenerateParser2(td.path)
 		if err == nil && reflect.TypeOf(parser).Elem().Name() != td.typeName {
 			t.Errorf(`GenerateParser("%s") resultant type did not match, wont %s, got %s`, td.path, td.typeName, reflect.TypeOf(parser).Elem())
 		}

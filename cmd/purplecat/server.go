@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
@@ -19,9 +21,9 @@ func respond(w http.ResponseWriter, statusCode int, content []byte) {
 	w.Write(content)
 }
 
-func respondError(w http.ResponseWriter, err error) {
+func respondError(w http.ResponseWriter, statusCode int, err error) {
 	jsonContent, _ := json.Marshal(map[string]string{"error": err.Error()})
-	respond(w, 500, jsonContent)
+	respond(w, statusCode, jsonContent)
 }
 
 func parseDepth(r *http.Request) int {
@@ -40,23 +42,75 @@ func respondJSON(w http.ResponseWriter, context *purplecat.Context, project *pur
 	buffer := bytes.NewBuffer([]byte{})
 	writer, err := context.NewWriter(buffer)
 	if err != nil {
-		respondError(w, err)
+		respondError(w, 500, err)
 		return
 	}
 	writer.Write(project)
 	respond(w, 200, buffer.Bytes())
 }
 
-func runPurplecat(r *http.Request, context *purplecat.Context) (*purplecat.Project, error) {
+type formPathSupporter struct {
+	data *bytes.Buffer
+}
+
+func (fp *formPathSupporter) Base(path *purplecat.Path) string {
+	return path.Path
+}
+
+func (fp *formPathSupporter) Dir(path *purplecat.Path) string {
+	return ""
+}
+
+func (fp *formPathSupporter) Join(path *purplecat.Path, append string) string {
+	return append
+}
+
+func (fp *formPathSupporter) ExistFile(path *purplecat.Path, context *purplecat.Context) bool {
+	return true
+}
+
+func (fp *formPathSupporter) Open(*purplecat.Path, *purplecat.Context) (io.ReadCloser, error) {
+	return fp, nil
+}
+
+func (fp *formPathSupporter) Read(buffer []byte) (int, error) {
+	return fp.data.Read(buffer)
+}
+
+func (fp *formPathSupporter) Close() error {
+	return nil
+}
+
+func runPurplecatByPost(w http.ResponseWriter, r *http.Request, context *purplecat.Context) (*purplecat.Project, error) {
+	contentType := r.Header.Get("Content-Type")
+	if contentType == "" {
+		return nil, fmt.Errorf("Content-Type was not set in the request header")
+	} else if contentType != "application/xml" {
+		return nil, fmt.Errorf("Supported Content-Type is only \"application/xml\" in the current implementation")
+	}
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil && err != io.EOF {
+		return nil, err
+	}
+	supporter := &formPathSupporter{data: bytes.NewBuffer(data)}
+	path := purplecat.NewPathWithSupporter("pom.xml", supporter)
+	parser, err := context.GenerateParser(path)
+	if err != nil {
+		return nil, err
+	}
+	return parser.Parse(path)
+}
+
+func runPurplecatByGet(w http.ResponseWriter, r *http.Request, context *purplecat.Context) (*purplecat.Project, error) {
 	target := r.FormValue("target")
 	if target == "" {
 		return nil, fmt.Errorf(`query param "target" is mandatory`)
 	}
-	parser, err := context.GenerateParser(target)
+	path := purplecat.NewPath(target)
+	parser, err := context.GenerateParser(path)
 	if err != nil {
 		return nil, err
 	}
-	path := purplecat.NewPath(target)
 	return parser.Parse(path)
 }
 
@@ -69,27 +123,35 @@ func createContext(r *http.Request, cache purplecat.CacheDB) *purplecat.Context 
 
 func updateHeader(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET,DELETE")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,DELETE,POST,OPTIONS")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 }
 
-func runPurplecatHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
+func runPurplecatHandler(cache purplecat.CacheDB, method string, runFunc func(http.ResponseWriter, *http.Request, *purplecat.Context) (*purplecat.Project, error)) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		logger.Infof("GET /purplecat/licenses")
+		logger.Infof("%s /purplecat/licenses", method)
 		if err := r.ParseForm(); err != nil {
-			respondError(w, err)
+			respondError(w, http.StatusInternalServerError, err)
 			return
 		}
 		context := createContext(r, cache)
-		project, err := runPurplecat(r, context)
+		project, err := runFunc(w, r, context)
 		if err != nil {
-			respondError(w, err)
+			respondError(w, http.StatusInternalServerError, err)
 		} else {
 			updateHeader(w, r)
 			respondJSON(w, context, project)
 			cache.Store()
 		}
 	}
+}
+
+func runPurplecatPostHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
+	return runPurplecatHandler(cache, "POST", runPurplecatByPost)
+}
+
+func runPurplecatGetHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
+	return runPurplecatHandler(cache, "GET", runPurplecatByGet)
 }
 
 func clearCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
@@ -99,6 +161,15 @@ func clearCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.
 		data, _ := json.Marshal(map[string]string{"message": "ok"})
 		respond(w, 200, data)
 	}
+}
+
+func optionsHandler(w http.ResponseWriter, r *http.Request) {
+	logger.Infof("OPTIONS: %s", r.URL)
+	updateHeader(w, r)
+	w.Header().Set("Access-Control-Request-Method", "POST,GET,DELETE")
+	w.Header().Set("Access-Control-Allow-Headers", "origin, accept, X-PINGOTHER, Content-Type")
+	w.WriteHeader(200)
+	w.Write([]byte{})
 }
 
 func wholeCacheHandler(cache purplecat.CacheDB) func(http.ResponseWriter, *http.Request) {
@@ -140,9 +211,12 @@ func existDir(dir string) bool {
 func createRestAPI(cache purplecat.CacheDB) *mux.Router {
 	router := mux.NewRouter()
 	subRouter := router.PathPrefix("/purplecat/api/").Subrouter()
-	subRouter.HandleFunc("/licenses", runPurplecatHandler(cache)).Methods("GET")
+	subRouter.HandleFunc("/licenses", runPurplecatGetHandler(cache)).Methods("GET")
+	subRouter.HandleFunc("/licenses", runPurplecatPostHandler(cache)).Methods("POST")
+	subRouter.HandleFunc("/licenses", optionsHandler).Methods("OPTIONS")
 	subRouter.HandleFunc("/caches", clearCacheHandler(cache)).Methods("DELETE")
 	subRouter.HandleFunc("/caches", wholeCacheHandler(cache)).Methods("GET")
+	subRouter.HandleFunc("/caches", optionsHandler).Methods("OPTIONS")
 	router.PathPrefix("/purplecat/").Handler(createFileServer())
 	return router
 }
