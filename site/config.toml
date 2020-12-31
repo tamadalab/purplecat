@@ -3,12 +3,13 @@ languageCode = "en-us"
 title = "purplecat"
 theme = "cayman-hugo-theme"
 enableEmoji = true
-googleAnalytics = ""
 
 pygmentsCodefences = true
 pygmentsStyle = "pygments"
 
 [params]
+    googleAnalytics4 = "G-EJSRQ93477"
+
     project_name = "purplecat"
     project_tagline = "Purple cat, Purple cat, What do you see? I see the dependent libraries and their licenses!"
     project_logo = "images/purplecat_128.png"
