@@ -2,30 +2,30 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>:house: Home on purplecat</title>
-    <link>https://tamadalab.github.io:1313/purplecat/</link>
+    <link>https://tamadalab.github.io/purplecat/</link>
     <description>Recent content in :house: Home on purplecat</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Mon, 12 Oct 2020 00:00:00 +0000</lastBuildDate>
     
-	<atom:link href="https://tamadalab.github.io:1313/purplecat/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://tamadalab.github.io/purplecat/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>:runner: Usage</title>
-      <link>https://tamadalab.github.io:1313/purplecat/usage/</link>
+      <link>https://tamadalab.github.io/purplecat/usage/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tamadalab.github.io:1313/purplecat/usage/</guid>
+      <guid>https://tamadalab.github.io/purplecat/usage/</guid>
       <description>$ purplecat -h purplecat version 0.3.2 purplecat [COMMON_OPTIONS] [CLI_MODE_OPTIONS] [SERVER_MODE_OPTIONS] &amp;lt;PROJECTs...|BUILD_FILEs...&amp;gt; COMMON_OPTIONS -c, --cache-type &amp;lt;TYPE&amp;gt; specifies the cache type. (default: default). Available values are: default, ref-only, newdb and memory. --cachedb-path &amp;lt;DBPATH&amp;gt; specifies the cache database path (default: ~/.config/purplecat/cachedb.json). -l, --log-level &amp;lt;LOGLEVEL&amp;gt; specifies the log level. (default: WARN). Available values are: DEBUG, INFO, WARN, and FATAL -h, --help prints this message. CLI_MODE_OPTIONS -d, --depth &amp;lt;DEPTH&amp;gt; specifies the depth for parsing (default: 1) -f, --format &amp;lt;FORMAT&amp;gt; specifies the result format.</description>
     </item>
     
     <item>
       <title>:smile: About</title>
-      <link>https://tamadalab.github.io:1313/purplecat/about/</link>
+      <link>https://tamadalab.github.io/purplecat/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tamadalab.github.io:1313/purplecat/about/</guid>
+      <guid>https://tamadalab.github.io/purplecat/about/</guid>
       <description>📜 License 
 This license permits
  👍 Commercial use, 👍 Modification, 👍 Distribution, and 👍 Private use.  🎃 Logo This image comes from https://pixy.org/4693873/ (CC-0).
@@ -35,10 +35,10 @@ I read the book to my child many times by her request. The purple cat is the mos
     
     <item>
       <title>:surfer: Demo</title>
-      <link>https://tamadalab.github.io:1313/purplecat/demo/</link>
+      <link>https://tamadalab.github.io/purplecat/demo/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>https://tamadalab.github.io:1313/purplecat/demo/</guid>
+      <guid>https://tamadalab.github.io/purplecat/demo/</guid>
       <description>  Pom File: Pom URL:     </description>
     </item>
     
