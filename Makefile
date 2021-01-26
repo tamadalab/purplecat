@@ -1,6 +1,6 @@
 GO := go
 NAME := purplecat
-VERSION := 0.3.2
+VERSION := 0.3.3
 DIST := $(NAME)-$(VERSION)
 
 all: test build
@@ -37,6 +37,7 @@ define _createDist
 	cp -r README.md LICENSE completions dist/$(1)_$(2)/$(DIST)
 	rm -rf dist/$(1)_$(2)/$(DIST)/docs
 	cp -r site/public dist/$(1)_$(2)/$(DIST)/docs
+	find dist/$(1)_$(2)/$(DIST) -name '.git*' | xargs rm -f
 	tar cfz dist/$(DIST)_$(1)_$(2).tar.gz -C dist/$(1)_$(2) $(DIST)
 endef
 
