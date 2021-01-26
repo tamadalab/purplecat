@@ -254,7 +254,7 @@ func findLicensesFromPom(artifact *artifact, root *xmlquery.Node) (Licenses, boo
 
 func parentArtifact(root *xmlquery.Node) (*artifact, bool) {
 	parentNode, err := xmlquery.Query(root, "/project/parent")
-	if err != nil {
+	if err != nil || parentNode == nil {
 		return nil, false
 	}
 	parent := newArtifactXPath(parentNode)
@@ -263,17 +263,14 @@ func parentArtifact(root *xmlquery.Node) (*artifact, bool) {
 
 func parseProjectInfo(root *xmlquery.Node) *artifact {
 	node, err := xmlquery.Query(root, "/project")
-	// node, err := xmlquery.Query(root, "/project/(groupId,artifactId,version)")
 	if err != nil {
 		return nil
 	}
 	artifact := newArtifactXPath(node)
-	if !artifact.isValid() {
-		parent, ok := parentArtifact(root)
-		if ok {
-			merge(artifact, parent)
-			artifact.parent = parent
-		}
+	parent, ok := parentArtifact(root)
+	if ok {
+		merge(artifact, parent)
+		artifact.parent = parent
 	}
 	return artifact
 }

@@ -10,9 +10,9 @@ draft: false
 [![Go Report Card](https://goreportcard.com/badge/github.com/tamadalab/purplecat)](https://goreportcard.com/report/github.com/tamadalab/purplecat)
 
 [![License](https://img.shields.io/badge/License-WTFPL-blue.svg)](https://github.com/tamada/purplecat/blob/main/LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.3.2-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.3.2)
+[![Version](https://img.shields.io/badge/Version-0.3.3-yellowgreen.svg)](https://github.com/tamada/purplecat/releases/tag/v0.3.3)
 [![Heroku-Deployed](https://img.shields.io/badge/Heroku-Deployed-green?logo=Heroku)](https://afternoon-wave-39227.herokuapp.com/purplecat/)
-[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftamadalab%2Fpurplecat%3A0.3.2-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
+[![Docker](https://img.shields.io/badge/docker-ghcr.io%2Ftamadalab%2Fpurplecat%3A0.3.3-blue?logo=docker)](https://github.com/orgs/tamadalab/packages/container/package/purplecat)
 
 # :cat: purplecat
 
